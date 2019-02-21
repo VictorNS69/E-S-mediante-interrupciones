@@ -27,13 +27,40 @@ Como se menciona en la [documentación del proyecto](/doc/manual.pdf), es aconse
 ```bash
 68kasm -l practica.s
 ```
-Lo que producirá un fichero con el listado de ensamblaje llamado _practica.lis_ y, si no ha habido errores, un fichero con el código objeto llamado _practica.h68_.
+Lo que producirá un fichero con el listado de ensamblaje llamado _practica.lis_ y, **si no ha habido errores**, un fichero con el código objeto llamado _practica.h68_.
 - Carga del computador virtual:
 ```bash
 bsvc /usr/local/bsvc/samples/m68000/practica.setup
 ```
 Esto cargará el fichero de configuración del computador (_practica.setup_).
 
-Una vez ya en la interfaz, se deberá carar el fichero objeto **_practica.h68_**.
+Es aconsejable copiar o crear un enlace simbolico al archivo _practica.setup_ para que sea más sencillo de llamar 
+```bash
+bsvc practica.setup
+```
+Una vez ya en la interfaz, se deberá cargar el fichero objeto **_practica.h68_**.
 
-Para una mayor información sobre la interfaz, mire la [documentación del proyecto](/doc/manual.pdf).
+Si todo ha salido correctamente, deberán abrirse 3 pantallas:
+- interfaz bsvc
+- ventana puerto A
+- ventana puerto B
+
+Para una mayor información sobre el uso de la interfaz, mire la [documentación del proyecto](/doc/manual.pdf).
+
+# Requisitos de las herramientas
+- Tener instalado `xterm`
+```bash
+sudo apt install xterm
+```
+- Tener instalada la herramienta `Tcl/Tk`
+```bash
+sudo apt install tcl
+sudo apt install tclsh
+```
+- Asegurarse de que el directorio `/usr/local/bsvc/bin` está en el _PATH_ escribiendo en el fichero `.bashrc`
+```bash
+export PATH=$PATH:/usr/local/bsvc/bin
+```
+
+# Problemas con las herramientas
+Para más información, consulte el apartado correspondiente en el [manual](/doc/manual.pdf).
