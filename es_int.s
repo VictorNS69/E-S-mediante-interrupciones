@@ -1,10 +1,14 @@
+**** Autores:
+****	Víctor Nieves Sánchez
+****	Daniel Morgera Pérez
+
 * Inicializa el SP y el PC
 **************************
 	ORG     $0
 	DC.L    $8000           * Pila
 	DC.L    INICIO          * PC
-
         ORG     $400
+
 *** Buffers ***
 B_R_A:	DS.B	2002	* buffer de recepcion de 2000 bytes
 B_T_A:	DS.B	2002	* buffer de transmision de 2000 bytes
@@ -34,7 +38,6 @@ RBA     EQU     $effc07       * buffer recepcion A  (lectura)
 ACR	EQU	$effc09	      * de control auxiliar
 IMR     EQU     $effc0B       * de mascara de interrupcion A (escritura)
 ISR     EQU     $effc0B       * de estado de interrupcion A (lectura)
-
 
 *** Puerto B ***
 MR1B    EQU     $effc11       * de modo B (escritura)
@@ -72,21 +75,23 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 	MOVE.L		#B_T_B,P_I_T_B
 	MOVE.L		#B_T_B,P_E_T_B
 	RTS
+
 **************************** FIN INIT *********************************************************
 
 **************************** RTI **************************************************************
 RTI:	RTS
+
 **************************** FIN RTI **********************************************************
 
 **************************** LEECAR ***********************************************************
 LEECAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
-	CMP.L		#0,D0
-	BEQ		REC_A
-	CMP.L		#1,D0
+	CMP.L		#0,D0			* Si es 0 es buffer de recepción de línea A
+	BEQ		REC_A			
+	CMP.L		#1,D0			* Si es 1 es buffer de recepción de línea B	
 	BEQ		REC_B
-	CMP.L		#2,D0
+	CMP.L		#2,D0			* Si es 2 es buffer de transmisión de línea A
 	BEQ		TRANS_A
-	CMP.L		#3,D0
+	CMP.L		#3,D0			* Si es 3 es buffer de transmisión de línea B
 	BEQ		TRANS_B
 REC_A:	BREAK
 REC_B:	BREAK
@@ -97,22 +102,26 @@ TRANS_B:BREAK
 
 **************************** ESCCAR ***********************************************************
 ESCCAR:	BREAK
+
 **************************** FIN ESCCAR *******************************************************
 
 **************************** LINEA ************************************************************
 LINEA:	BREAK
-**************************** FIN LINEA ********************************************************
 
+**************************** FIN LINEA ********************************************************
 
 **************************** PRINT ************************************************************
 PRINT:  BREAK
+
 **************************** FIN PRINT ********************************************************
 
-**************************** SCAN ************************************************************
+**************************** SCAN *************************************************************
 SCAN:   BREAK
-**************************** FIN SCAN ********************************************************
 
-**************************** PROGRAMA PRINCIPAL **********************************************
+**************************** FIN SCAN *********************************************************
+
+**************************** PROGRAMA PRINCIPAL ***********************************************
 INICIO: BSR	INIT
 	BREAK
-**************************** FIN PROGRAMA PRINCIPAL ******************************************
+
+**************************** FIN PROGRAMA PRINCIPAL *******************************************
