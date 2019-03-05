@@ -8,7 +8,7 @@
 
 * Definición de equivalencias
 *********************************
-
+*** Puerto A ***
 MR1A    EQU     $effc01       * de modo A (escritura)
 MR2A    EQU     $effc01       * de modo A (2º escritura)
 SRA     EQU     $effc03       * de estado A (lectura)
@@ -21,16 +21,38 @@ IMR     EQU     $effc0B       * de mascara de interrupcion A (escritura)
 ISR     EQU     $effc0B       * de estado de interrupcion A (lectura)
 
 
+*** Puerto B ***
+MR1B    EQU     $effc11       * de modo B (escritura)
+MR2B    EQU     $effc11       * de modo B (2º escritura)
+SRB     EQU     $effc13       * de estado B (lectura)
+CSRB    EQU     $effc13       * de seleccion de reloj B (escritura)
+CRB     EQU     $effc15       * de control B (escritura)
+RBB     EQU     $effc17       * buffer recepcion B (lectura)
+TBB     EQU     $effc17       * buffer transmision B (escritura)
+IVR     EQU     $effc09       * de vector de interrupcion
+
 **************************** INIT *************************************************************
-INIT:
-        MOVE.B          #%00010000,CRA      * Reinicia el puntero MR1
-        MOVE.B          #%00000011,MR1A     * 8 bits por caracter.
-        MOVE.B          #%00000000,MR2A     * Eco desactivado.
-        MOVE.B          #%11001100,CSRA     * Velocidad = 38400 bps.
-        MOVE.B          #%00000000,ACR      * Velocidad = 38400 bps.
-        MOVE.B          #%00000101,CRA      * Transmision y recepcion activados.
+INIT:	MOVE.B          #%00010000,CRA      * Reinicia el puntero MR1A
+        MOVE.B          #%00010000,CRB      * Reinicia el puntero MR1B
+	MOVE.B          #%00000011,MR1A     * 8 bits por caracter de modo A
+	MOVE.B          #%00000011,MR1B     * 8 bits por caracter de modo B
+        MOVE.B          #%00000000,MR2A     * Eco desactivado
+        MOVE.B          #%00000000,MR2B     * Eco desactivado	
+	MOVE.B 		#%11001100,CSRA     * Velocidad = 38400 bps
+	MOVE.B 		#%11001100,CSRB     * Velocidad = 38400 bps
+	MOVE.B 		#%00000000,ACR	    * Inicializacion control auxiliar
+	MOVE.B 		#%00000101,CRA      * Transmision y recepcion activados A
+	MOVE.B 		#%00000101,CRB      * Transmision y recepcion activados B
+	MOVE.B 		#$040,IVR           * Vector de Interrrupcion nº 40
+	MOVE.B 		#%00100010,IMR      * Habilita las interrupciones de A y B
+	MOVE.L 		#RTI,$100           * Inicio de RTI en tabla de interrupciones
+*** Inicializacion de buffers ***
         RTS
 **************************** FIN INIT *********************************************************
+
+**************************** RTI **************************************************************
+RTI:	RTS	
+**************************** FIN RTI **********************************************************
 
 **************************** LEECAR ***********************************************************
 LEECAR:	BREAK
@@ -54,5 +76,6 @@ SCAN:   BREAK
 **************************** FIN SCAN ********************************************************
 
 **************************** PROGRAMA PRINCIPAL **********************************************
-INICIO: BREAK
+INICIO: BSR	INIT
+	BREAK
 **************************** FIN PROGRAMA PRINCIPAL ******************************************
