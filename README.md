@@ -9,6 +9,10 @@ Daniel Morgera Pérez
 ## Herramientas
 La herramienta que se utiliza en la realización de esta práctica es el **simulador del MC68000 bsvc**. Este simulador incluye el programa **ensamblador 68kasm** y el fichero de configuración del computador emulado. 
 
+Las herramientas se encuentran en el paquete comprimido [bsvc-2.1+_Estatica.tar.gz](/bsvc-2.1+_Estatica.tar.gz). 
+
+Es recomendable seguir las instrucciones de instalación.
+
 ## Documentación
 La [documentación del proyecto](/doc/manual.pdf) incluye los siguientes apartados:
 
