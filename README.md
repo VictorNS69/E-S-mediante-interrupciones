@@ -52,9 +52,10 @@ Si todo ha salido correctamente, deberán abrirse 3 pantallas:
 Para una mayor información sobre el uso de la interfaz, mire la [documentación del proyecto](/doc/manual.pdf).
 
 # Requisitos de las herramientas
-- Tener instalado `xterm`
+- Tener instalado `xterm` y `xtermpipe`
 ```bash
 sudo apt install xterm
+sudo apt install xtermpipe
 ```
 - Tener instalada la herramienta `Tcl/Tk`
 ```bash
