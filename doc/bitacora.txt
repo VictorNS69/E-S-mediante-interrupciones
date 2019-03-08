@@ -8,3 +8,8 @@ Bitacora del proyecto.
 	Se han inicializado los datos del proyecto (velocidad, puertos, buffers, ...) y se ha creado la estructura del programa.
 	No se ha realizado ninguna entrega.
 	Tiempo: 3 horas.
+
+7/03/19:
+	Se ha terminado la subrutina LEECAR supuestamente.
+	No se ha realizado ninguna entrega.
+	Tiempo: 2 horas.
