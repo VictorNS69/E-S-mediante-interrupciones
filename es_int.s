@@ -10,20 +10,20 @@
         ORG     $400
 
 *** Buffers ***
-B_R_A:	DS.B	2000	* buffer de recepcion de 2000 bytes
-B_T_A:	DS.B	2000	* buffer de transmision de 2000 bytes
-B_R_B:	DS.B	2000	* buffer de recepcion de 2000 bytes
-B_T_B:	DS.B	2000	* buffer de transmision de 2000 bytes
+BRA:	DS.B	2001	* buffer de recepcion de 2000 bytes
+BTA:	DS.B	2001	* buffer de transmision de 2000 bytes
+BRB:	DS.B	2001	* buffer de recepcion de 2000 bytes
+BTB:	DS.B	2001	* buffer de transmision de 2000 bytes
 
 *** Punteros ***
-P_I_R_A:	DC.L	0	* puntero de introduccion a B_R_A
-P_E_R_A:	DC.L	0	* puntero de extraccion a B_R_A
-P_I_T_A:	DC.L	0	* puntero de introduccion a B_T_A
-P_E_T_A:	DC.L	0	* puntero de extraccion a B_T_A
-P_I_R_B:	DC.L	0	* puntero de introduccion a B_R_B
-P_E_R_B:	DC.L	0	* puntero de extraccion a B_R_B
-P_I_T_B:	DC.L	0	* puntero de introduccion a B_T_B
-P_E_T_B:	DC.L	0	* puntero de extraccion a B_T_B
+PIRA:	DC.L	0	* puntero de introduccion a BRA
+PERA:	DC.L	0	* puntero de extraccion a BRA
+PITA:	DC.L	0	* puntero de introduccion a BTA
+PETA:	DC.L	0	* puntero de extraccion a BTA
+PIRB:	DC.L	0	* puntero de introduccion a BRB
+PERB:	DC.L	0	* puntero de extraccion a BRB
+PITB:	DC.L	0	* puntero de introduccion a BTB
+PETB:	DC.L	0	* puntero de extraccion a BTB
 
 * Definición de equivalencias
 *********************************
@@ -66,14 +66,14 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 	MOVE.L 		#RTI,$100		* Inicio de RTI en tabla de interrupciones H'40*4
 
 *** Inicializacion de buffers ***
-	MOVE.L		#B_R_A,P_I_R_A
-	MOVE.L		#B_R_A,P_E_R_A
-	MOVE.L		#B_T_A,P_I_T_A
-	MOVE.L		#B_T_A,P_E_T_A
-	MOVE.L		#B_R_B,P_I_R_B
-	MOVE.L		#B_R_B,P_E_R_B
-	MOVE.L		#B_T_B,P_I_T_B
-	MOVE.L		#B_T_B,P_E_T_B
+	MOVE.L		#BRA,PIRA
+	MOVE.L		#BRA,PERA
+	MOVE.L		#BTA,PITA
+	MOVE.L		#BTA,PETA
+	MOVE.L		#BRB,PIRB
+	MOVE.L		#BRB,PERB
+	MOVE.L		#BTB,PITB
+	MOVE.L		#BTB,PETB
 	RTS
 
 **************************** FIN INIT *********************************************************
@@ -86,73 +86,135 @@ RTI:	RTS
 **************************** LEECAR ***********************************************************
 LEECAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
 	CMP.L		#0,D0			* Si es 0 es buffer de recepción de línea A
-	BEQ		REC_A			
-	CMP.L		#1,D0			* Si es 1 es buffer de recepción de línea B	
-	BEQ		REC_B
+	BEQ		LRECA
+	CMP.L		#1,D0			* Si es 1 es buffer de recepción de línea B
+	BEQ		LRECB
 	CMP.L		#2,D0			* Si es 2 es buffer de transmisión de línea A
-	BEQ		TRANS_A
+	BEQ		LTRANSA
 	CMP.L		#3,D0			* Si es 3 es buffer de transmisión de línea B
-	BEQ		TRANS_B
+	BEQ		LTRANSB
 
-REC_A:	MOVE.L		#P_I_R_A,A1		* A1 = Puntero a P_I_R_A
-	MOVE.L		#P_E_R_A,A2		* A2 = Punter a P_E_R_A	
+LRECA:	MOVE.L		#PIRA,A1		* A1 = Puntero a PIRA
+	MOVE.L		#PERA,A2		* A2 = Puntero a PERA
 	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
-	BEQ		FINVAC
-	CMP		#B_R_A+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
-	BEQ		R_ERA
+	BEQ		LFINVAC
+	CMP		#BRA+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		LRERA
 	MOVE.L		(A2)+,D0
 	RTS
 
-REC_B:	MOVE.L		#P_I_R_B,A1		* A1 = Puntero a P_I_R_B
-	MOVE.L		#P_E_R_B,A2		* A2 = Punter a P_E_R_B
+LRECB:	MOVE.L		#PIRB,A1		* A1 = Puntero a PIRB
+	MOVE.L		#PERB,A2		* A2 = puntero a PERB
 	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
-	BEQ		FINVAC
-	CMP		#B_R_B+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio 
-	BEQ		R_ERB
+	BEQ		LFINVAC
+	CMP		#BRB+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		LRERB
 	MOVE.L		(A2)+,D0
 	RTS
 
-TRANS_A:MOVE.L		#P_I_T_A,A1		* A1 = Puntero a P_I_T_A
-	MOVE.L		#P_E_T_A,A2		* A2 = Punter a P_E_T_A
+LTRANSA:MOVE.L		#PITA,A1		* A1 = Puntero a PITA
+	MOVE.L		#PETA,A2		* A2 = puntero a PETA
 	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
-	BEQ		FINVAC
-	CMP		#B_R_B+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio 
-	BEQ		R_ETA
+	BEQ		LFINVAC
+	CMP		#BTA+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		LRETA
 	MOVE.L		(A2)+,D0
 	RTS
 
-TRANS_B:MOVE.L		#P_I_T_B,A1		* A1 = Puntero a P_I_T_B
-	MOVE.L		#P_E_T_B,A2		* A2 = Punter a P_E_T_B
+LTRANSB:MOVE.L		#PITB,A1		* A1 = Puntero a PITB
+	MOVE.L		#PETB,A2		* A2 = puntero a PETB
 	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
-	BEQ		FINVAC
-	CMP		#B_R_B+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio 
-	BEQ		R_ETB
+	BEQ		LFINVAC
+	CMP		#BTB+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		LRETB
 	MOVE.L		(A2)+,D0
 	RTS
 
-R_ERA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#B_R_A,A2
+LRERA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BRA,A2
 	RTS
 
-R_ERB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#B_R_B,A2
+LRERB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BRB,A2
 	RTS
 
-R_ETA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#B_T_A,A2
+LRETA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BTA,A2
 	RTS
 
-R_ETB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#B_T_B,A2
+LRETB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BTB,A2
 	RTS
 
-FINVAC:	MOVE.L		#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+LFINVAC:	MOVE.L		#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
 	RTS
 
 **************************** FIN LEECAR *******************************************************
 
 **************************** ESCCAR ***********************************************************
-ESCCAR:	BREAK
+ESCCAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
+	CMP.L		#0,D0			* Si es 0 es buffer de recepción de línea A
+	BEQ		ERECA
+	CMP.L		#1,D0			* Si es 1 es buffer de recepción de línea B
+	BEQ		ERECB
+	CMP.L		#2,D0			* Si es 2 es buffer de transmisión de línea A
+	BEQ		ETRANSA
+	CMP.L		#3,D0			* Si es 3 es buffer de transmisión de línea B
+	BEQ		ETRANSB
+
+ERECA:	MOVE.L		#PIRA,A1		* A1 = Puntero a PIRA
+	MOVE.L		#,A3		* A3 = Puntero a PIRA auxiliar
+	MOVE.L		#PERA,A2		* A2 = puntero a PERA
+	CMP.L		#BRB+2001,$1(A3)
+	BLE				
+	RTS
+
+ERECB:	MOVE.L		#PIRB,A1		* A1 = Puntero a PIRB
+	MOVE.L		#PERB,A2		* A2 = puntero a PERB
+	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
+	BEQ		EFINVAC
+	CMP		#BRB+2001,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		ERERB
+	MOVE.L		(A2)+,D0
+	RTS
+
+ETRANSA:MOVE.L		#PITA,A1		* A1 = Puntero a PITA
+	MOVE.L		#PETA,A2		* A2 = puntero a PETA
+	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
+	BEQ		EFINVAC
+	CMP		#BRB+2001,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		ERETA
+	MOVE.L		(A2)+,D0
+	RTS
+
+ETRANSB:MOVE.L		#PITB,A1		* A1 = Puntero a PITB
+	MOVE.L		#PETB,A2		* A2 = puntero a PETB
+	CMP.L		A1,A2			* Ambos punteros apuntan al mismo lugar, luego lista vacia
+	BEQ		EFINVAC
+	CMP		#BRB+2001,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
+	BEQ		ERETB
+	MOVE.L		(A2)+,D0
+	RTS
+
+ERERA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BRA,A2
+	RTS
+
+ERERB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BRB,A2
+	RTS
+
+ERETA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BTA,A2
+	RTS
+
+ERETB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
+	MOVE.L		#BTB,A2
+	RTS
+
+EFINVAC:MOVE.L		#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	RTS
+
 
 **************************** FIN ESCCAR *******************************************************
 
