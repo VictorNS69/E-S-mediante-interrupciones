@@ -102,57 +102,28 @@ LEECAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
 	CMP.L		#3,D0			* Si es 3 es buffer de transmisión de línea B
 	BEQ		LTRANSB
 
-LRECA:	MOVE.L		#PIRA,A1		* A1 = Puntero a PIRA
-	MOVE.L		#PERA,A2		* A2 = Puntero a PERA
-	CMP.L		A1,A2			* Si ambos punteros apuntan al mismo lugar, lista vacia
-	BEQ		LFINVAC
-	CMP		#BRA+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
-	BEQ		LRERA
-	MOVE.L		(A2)+,D0
-	RTS
+LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
+	MOVE.L		#PERA,A1		* A1 = PERA
+	MOVE.L		#PIRA,A2		* A2 = PIRA
+	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
+	BEQ 		EMCONTRA	
+	CMP		#BRA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	BEQ		ERESRA	
+	BRA		EFINOKRA
 
-LRECB:	MOVE.L		#PIRB,A1		* A1 = Puntero a PIRB
-	MOVE.L		#PERB,A2		* A2 = puntero a PERB
-	CMP.L		A1,A2			* Si ambos punteros apuntan al mismo lugar, lista vacia
-	BEQ		LFINVAC
-	CMP		#BRB+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
-	BEQ		LRERB
-	MOVE.L		(A2)+,D0
-	RTS
+LRECB:	
 
-LTRANSA:MOVE.L		#PITA,A1		* A1 = Puntero a PITA
-	MOVE.L		#PETA,A2		* A2 = puntero a PETA
-	CMP.L		A1,A2			* Si ambos punteros apuntan al mismo lugar, lista vacia
-	BEQ		LFINVAC
-	CMP		#BTA+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
-	BEQ		LRETA
-	MOVE.L		(A2)+,D0
-	RTS
+LTRANSA:
 
-LTRANSB:MOVE.L		#PITB,A1		* A1 = Puntero a PITB
-	MOVE.L		#PETB,A2		* A2 = puntero a PETB
-	CMP.L		A1,A2			* Si ambos punteros apuntan al mismo lugar, lista vacia
-	BEQ		LFINVAC
-	CMP		#BTB+2000,A2		* Si llegamos al final del buffer, asignamos de nuevo el puntero al principio
-	BEQ		LRETB
-	MOVE.L		(A2)+,D0
-	RTS
+LTRANSB:
 
-LRERA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#BRA,A2
-	RTS
+LRERA:	
 
-LRERB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#BRB,A2
-	RTS
+LRERB:	
 
-LRETA:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#BTA,A2
-	RTS
+LRETA:
 
-LRETB:	MOVE.L		A2,D0			* D0 = dato y avanzamos puntero
-	MOVE.L		#BTB,A2
-	RTS
+LRETB:	
 
 LFINVAC:MOVE.L		#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
 	RTS
@@ -182,7 +153,7 @@ ERECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 	BRA		EFINOKRA
 
 *** BUFFER RECEPCION LINEA B ***
-ERECB:	MOVE.L		CONTRA,D2		* D2 = CONTRB (contador)
+ERECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 	MOVE.L		#PERB,A1		* A1 = PERB
 	MOVE.L		#PIRB,A2		* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
@@ -215,6 +186,7 @@ ETRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
 *** RESET PUNTERO EN BUFFER DE RECEPCION A ***
 ERESRA:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTRA
 	MOVE.L 		#BRA,PIRA		* Pongo el puntero de introduccion al principio del buffer
 	MOVE.L 		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -222,6 +194,7 @@ ERESRA:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 *** RESET PUNTERO EN BUFFER DE RECEPCION B ***
 ERESRB:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTRB
 	MOVE.L 		#BRB,PIRB		* Pongo el puntero de introduccion al principio del buffer
 	MOVE.L 		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -229,6 +202,7 @@ ERESRB:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 *** RESET PUNTERO EN BUFFER DE TRANSMISION A ***
 ERESTA:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTTA
 	MOVE.L 		#BTA,PITA		* Pongo el puntero de introduccion al principio del buffer
 	MOVE.L 		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -236,6 +210,7 @@ ERESTA:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 *** RESET PUNTERO EN BUFFER DE TRANSMISION B ***
 ERESTB:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTTB
 	MOVE.L 		#BTB,PITB		* Pongo el puntero de introduccion al principio del buffer
 	MOVE.L 		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -247,6 +222,7 @@ EMCONTRA:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 
 EFINOKRA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTRA
 	MOVE.L 		A2,PIRA			* Actualizo la posicion del puntero de introduccion
 	MOVE.L		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -257,6 +233,7 @@ EMCONTRB:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 
 EFINOKRB:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTRB
 	MOVE.L 		A2,PIRB			* Actualizo la posicion del puntero de introduccion
 	MOVE.L		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -267,6 +244,7 @@ EMCONTTA:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 
 EFINOKTA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTTA
 	MOVE.L 		A2,PITA			* Actualizo la posicion del puntero de introduccion
 	MOVE.L		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
@@ -277,6 +255,7 @@ EMCONTTB:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 
 EFINOKTB:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
 	ADD.L		#1,D2			* Aumento el contador de caracteres en el buffer
+	MOVE.L		D2,CONTTB
 	MOVE.L 		A2,PITB			* Actualizo la posicion del puntero de introduccion
 	MOVE.L		#0,D0			* D0 = 0 (introduccion correcta)
 	RTS
