@@ -22,5 +22,6 @@ Bitacora del proyecto.
 
 14/03/19:
 	Se ha modificado ESCCAR, creemos que funciona correctamente pero falta testear.
+	Se ha modificado LEECAR, creemos que funciona correctamente pero falta testear.
 	No se ha realizado ninguna entrega.
-	Tiempo: 3.30 horas.
+	Tiempo: 4.45 horas.
