@@ -13,8 +13,14 @@ Bitacora del proyecto.
 	Se ha terminado la subrutina LEECAR supuestamente.
 	No se ha realizado ninguna entrega.
 	Tiempo: 2 horas.
+
 12/03/19:
 	Se ha cambiado LEECAR. Aún no funciona.
 	Se ha empezado ESCCAR, aún estamos pensando en el algoritmo principal del buffer.
 	No se ha realizado ninguna entrega.
 	Tiempo: 2 horas.
+
+14/03/19:
+	Se ha modificado ESCCAR, creemos que funciona correctamente pero falta testear.
+	No se ha realizado ninguna entrega.
+	Tiempo: 3.30 horas.
