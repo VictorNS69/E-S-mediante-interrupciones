@@ -16,14 +16,14 @@ BRB:	DS.B	2000	* buffer de recepcion de 2000 bytes
 BTB:	DS.B	2000	* buffer de transmision de 2000 bytes
 
 *** Punteros ***
-PIRA:	DC.L	0	* puntero de introduccion a BRA
-PERA:	DC.L	0	* puntero de extraccion a BRA
-PITA:	DC.L	0	* puntero de introduccion a BTA
-PETA:	DC.L	0	* puntero de extraccion a BTA
-PIRB:	DC.L	0	* puntero de introduccion a BRB
-PERB:	DC.L	0	* puntero de extraccion a BRB
-PITB:	DC.L	0	* puntero de introduccion a BTB
-PETB:	DC.L	0	* puntero de extraccion a BTB
+PIRA:	DS.B	4	* puntero de introduccion a BRA
+PERA:	DS.B	4	* puntero de extraccion a BRA
+PITA:	DS.B	4	* puntero de introduccion a BTA
+PETA:	DS.B	4	* puntero de extraccion a BTA
+PIRB:	DS.B	4	* puntero de introduccion a BRB
+PERB:	DS.B	4	* puntero de extraccion a BRB
+PITB:	DS.B	4	* puntero de introduccion a BTB
+PETB:	DS.B	4	* puntero de extraccion a BTB
 
 *** Contadores ***
 CONTRA:	DC.W	0	* contador de caracteres BRA
@@ -105,8 +105,8 @@ LEECAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
 *************** ELECCION DE BUFFER ***************
 *** BUFFER RECEPCION LINEA A ***
 LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
-	MOVE.L		#PERA,A1		* A1 = PERA
-	MOVE.L		#PIRA,A2		* A2 = PIRA
+	MOVE.L		PERA,A1		* A1 = PERA
+	MOVE.L		PIRA,A2		* A2 = PIRA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRA	
 	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -115,8 +115,8 @@ LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 
 *** BUFFER RECEPCION LINEA B ***
 LRECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
-	MOVE.L		#PERB,A1		* A1 = PERB
-	MOVE.L		#PIRB,A2		* A2 = PIRB
+	MOVE.L		PERB,A1		* A1 = PERB
+	MOVE.L		PIRB,A2		* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRB	
 	CMP		#BRB+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -125,8 +125,8 @@ LRECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 
 *** BUFFER TRANSMISION LINEA A ***
 LTRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
-	MOVE.L		#PETA,A1		* A1 = PETA
-	MOVE.L		#PITA,A2		* A2 = PITA
+	MOVE.L		PETA,A1		* A1 = PETA
+	MOVE.L		PITA,A2		* A2 = PITA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTA	
 	CMP		#BTA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -135,8 +135,8 @@ LTRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
 
 *** BUFFER TRANSMISION LINEA B ***
 LTRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
-	MOVE.L		#PETB,A1		* A1 = PETB
-	MOVE.L		#PITB,A2		* A2 = PITB
+	MOVE.L		PETB,A1		* A1 = PETB
+	MOVE.L		PITB,A2		* A2 = PITB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTB	
 	CMP		#BTB+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -241,8 +241,8 @@ ESCCAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
 *************** ELECCION DE BUFFER ***************
 *** BUFFER RECEPCION LINEA A ***
 ERECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
-	MOVE.L		#PERA,A1		* A1 = PERA
-	MOVE.L		#PIRA,A2		* A2 = PIRA
+	MOVE.L		PERA,A1		* A1 = PERA
+	MOVE.L		PIRA,A2		* A2 = PIRA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTRA	
 	CMP		#BRA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -251,8 +251,8 @@ ERECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 
 *** BUFFER RECEPCION LINEA B ***
 ERECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
-	MOVE.L		#PERB,A1		* A1 = PERB
-	MOVE.L		#PIRB,A2		* A2 = PIRB
+	MOVE.L		PERB,A1		* A1 = PERB
+	MOVE.L		PIRB,A2		* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTRB	
 	CMP		#BRB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -261,8 +261,8 @@ ERECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 
 *** BUFFER TRANSMISION LINEA A ***
 ETRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
-	MOVE.L		#PETA,A1		* A1 = PETA
-	MOVE.L		#PITA,A2		* A2 = PITA
+	MOVE.L		PETA,A1		* A1 = PETA
+	MOVE.L		PITA,A2		* A2 = PITA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTTA	
 	CMP		#BTA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -271,8 +271,8 @@ ETRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
 
 *** BUFFER TRANSMISION LINEA B ***
 ETRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
-	MOVE.L		#PETB,A1		* A1 = PETB
-	MOVE.L		#PITB,A2		* A2 = PITB
+	MOVE.L		PETB,A1		* A1 = PETB
+	MOVE.L		PITB,A2		* A2 = PITB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTTB	
 	CMP		#BTB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -388,6 +388,11 @@ SCAN:   BREAK
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
 INICIO: BSR	INIT
+	MOVE.L	#0,D0
+	MOVE.L  #$99,D1
+	BSR 	ESCCAR
+	MOVE.L	#0,D0
+	BSR	LEECAR
 	BREAK
 
 **************************** FIN PROGRAMA PRINCIPAL *******************************************
