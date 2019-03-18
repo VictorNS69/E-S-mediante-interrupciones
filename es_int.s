@@ -26,10 +26,10 @@ PITB:	DS.B	4	* puntero de introduccion a BTB
 PETB:	DS.B	4	* puntero de extraccion a BTB
 
 *** Contadores ***
-CONTRA:	DC.W	0	* contador de caracteres BRA
-CONTRB:	DC.W	0	* contador de caracteres BRB
-CONTTA: DC.W    0	* contador de caracteres BTA
-CONTTB: DC.W	0	* contador de caracteres BTB
+CONTRA:	DC.L	0	* contador de caracteres BRA
+CONTRB:	DC.L	0	* contador de caracteres BRB
+CONTTA: DC.L    0	* contador de caracteres BTA
+CONTTB: DC.L	0	* contador de caracteres BTB
 
 
 
@@ -109,7 +109,7 @@ LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 	MOVE.L		PIRA,A2		* A2 = PIRA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRA	
-	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESRA	
 	BRA		LFINOKRA
 
@@ -119,7 +119,7 @@ LRECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 	MOVE.L		PIRB,A2		* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRB	
-	CMP		#BRB+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESRB	
 	BRA		LFINOKRB
 
@@ -129,7 +129,7 @@ LTRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
 	MOVE.L		PITA,A2		* A2 = PITA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTA	
-	CMP		#BTA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESTA	
 	BRA		LFINOKTA
 
@@ -139,7 +139,7 @@ LTRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
 	MOVE.L		PITB,A2		* A2 = PITB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTB	
-	CMP		#BTB+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESTB	
 	BRA		LFINOKTB
 
@@ -166,7 +166,7 @@ LRESTA:	MOVE.B 		(A1),D0			* Extraigo el caracter del buffer
 	RTS
 
 *** RESET PUNTERO EN BUFFER DE TRANSMISION B ***
-LRESTB:	MOVE.B 		(A2),D0			* Extraigo el caracter del buffer
+LRESTB:	MOVE.B 		(A1),D0			* Extraigo el caracter del buffer
 	SUB.L		#1,D2			* Reduzco el contador de caracteres en el buffer
 	MOVE.L		D2,CONTTB
 	MOVE.L 		#BTB,PETB		* Pongo el puntero de extraccion al principio del buffer
@@ -176,7 +176,7 @@ LRESTB:	MOVE.B 		(A2),D0			* Extraigo el caracter del buffer
 *** MIRAMOS CONTADOR Y FINAL OK EN RECEPCION DE A ***
 LMCONTRA:CMP.L		#0,D2			* Si el buffer esta vacio pongo 0xFFFFFFFF en D0
 	BEQ		LFINVAC
-	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESRA
 	
 LFINOKRA:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicion
@@ -188,7 +188,7 @@ LFINOKRA:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicio
 *** MIRAMOS CONTADOR Y FINAL OK EN RECEPCION DE B ***
 LMCONTRB:CMP.L		#0,D2			* Si el buffer esta vacio pongo 0xFFFFFFFF en D0
 	BEQ		LFINVAC
-	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESRB
 	
 LFINOKRB:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicion
@@ -200,7 +200,7 @@ LFINOKRB:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicio
 *** MIRAMOS CONTADOR Y FINAL OK EN TRANSMISION DE A ***
 LMCONTTA:CMP.L		#0,D2			* Si el buffer esta vacio pongo 0xFFFFFFFF en D0
 	BEQ		LFINVAC
-	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESTA	
 
 LFINOKTA:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicion
@@ -212,9 +212,8 @@ LFINOKTA:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicio
 *** MIRAMOS CONTADOR Y FINAL OK EN TRANSMISION DE B ***
 LMCONTTB:CMP.L		#0,D2			* Si el buffer esta vacio pongo 0xFFFFFFFF en D0
 	BEQ		LFINVAC
-	CMP		#BRA+2000,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		LRESTB	
-
 
 LFINOKTB:MOVE.B		(A1)+,D0		* D0 = Caracter leido y apunto a la siguiente posicion
 	SUB.L		#1,D2			* Reduzco el contador de caracteres en el buffer
@@ -245,7 +244,7 @@ ERECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 	MOVE.L		PIRA,A2		* A2 = PIRA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTRA	
-	CMP		#BRA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRA+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESRA	
 	BRA		EFINOKRA
 
@@ -255,7 +254,7 @@ ERECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 	MOVE.L		PIRB,A2		* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTRB	
-	CMP		#BRB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRB+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESRB	
 	BRA		EFINOKRB
 
@@ -265,7 +264,7 @@ ETRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
 	MOVE.L		PITA,A2		* A2 = PITA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTTA	
-	CMP		#BTA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTA+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESTA	
 	BRA		EFINOKTA
 
@@ -275,7 +274,7 @@ ETRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
 	MOVE.L		PITB,A2		* A2 = PITB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		EMCONTTB	
-	CMP		#BTB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTB+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESTB	
 	BRA		EFINOKTB
 
@@ -316,7 +315,7 @@ ERESTB:	MOVE.B 		D1,(A2)			* Inserto el caracter en el buffer
 *** MIRAMOS CONTADOR Y FINAL OK EN RECEPCION DE A ***
 EMCONTRA:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 	BEQ		EFINLLE
-	CMP		#BRA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRA+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESRA
 	
 EFINOKRA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
@@ -329,7 +328,7 @@ EFINOKRA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la sigu
 *** MIRAMOS CONTADOR Y FINAL OK EN RECEPCION DE B ***
 EMCONTRB:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 	BEQ		EFINLLE
-	CMP		#BRB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BRB+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESRB
 	
 EFINOKRB:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
@@ -342,7 +341,7 @@ EFINOKRB:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la sigu
 *** MIRAMOS CONTADOR Y FINAL OK EN TRANSMISION DE A ***
 EMCONTTA:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 	BEQ		EFINLLE
-	CMP		#BTA+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTA+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESTA	
 
 EFINOKTA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
@@ -355,7 +354,7 @@ EFINOKTA:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la sigu
 *** MIRAMOS CONTADOR Y FINAL OK EN TRANSMISION DE B ***
 EMCONTTB:CMP.L		#2000,D2		* Si el buffer esta lleno pongo 0xFFFFFFFF en D0
 	BEQ		EFINLLE
-	CMP		#BTB+2000,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
+	CMP		#BTB+1999,A2		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
 	BEQ		ERESTB
 
 EFINOKTB:MOVE.B		D1,(A2)+		* Inserto el caracter en el buffer y apunto a la siguiente posicion
@@ -372,7 +371,128 @@ EFINLLE:MOVE.L		#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
 **************************** FIN ESCCAR *******************************************************
 
 **************************** LINEA ************************************************************
-LINEA:	BREAK
+LINEA:	MOVE.L		#0,D2			* Inicializo contador de caracteres de la linea
+	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
+	CMP.L		#0,D0			* Si es 0 es buffer de recepción de línea A
+	BEQ		LIRECA
+	CMP.L		#1,D0			* Si es 1 es buffer de recepción de línea B
+	BEQ		LIRECB
+	CMP.L		#2,D0			* Si es 2 es buffer de transmisión de línea A
+	BEQ		LITRANSA
+	CMP.L		#3,D0			* Si es 3 es buffer de transmisión de línea B
+	BEQ		LITRANSB
+
+*************** ELECCION DE BUFFER ***************
+*** BUFFER RECEPCION LINEA A ***
+LIRECA:	MOVE.L		PERA,A1		* A1 = PERA
+	MOVE.L		PIRA,A2		* A2 = PIRA
+	CMP 		A1,A2		* Si los punteros coinciden miramos el contador global de caracteres
+	BNE		BUCLIRA
+	CMP		#0,CONTRA	* Si el contador global esta a 0
+	BNE		BUCLIRA
+	BRA		LIFINZ	
+	
+BUCLIRA:MOVE.B		(A1),D4
+	CMP.B		#13,D4		* Si el caracter es el ASCII 13 salimos del bucle
+	BEQ		LIFINOK
+	CMP		#BRA+1999,A1	* Si estamos al final del buffer
+	BEQ		LIRESRA
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	ADD.L		#1,A1		* Avanzo el puntero de linea
+	BRA		LICOINRA
+
+LIRESRA:MOVE.L		#BRA,A1		* Coloco el puntero al inicio del buffer
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	BRA		LICOINRA
+
+LICOINRA:CMP 		A1,A2		* Si los punteros coinciden, D0 = 0 y acabo
+	BEQ		LIFINZ
+	BRA		BUCLIRA
+
+*** BUFFER RECEPCION LINEA B ***
+LIRECB:	MOVE.L		PERB,A1		* A1 = PERB
+	MOVE.L		PIRB,A2		* A2 = PIRB
+	CMP 		A1,A2		* Si los punteros coinciden miramos el contador global de caracteres
+	BNE		BUCLIRB
+	CMP		#0,CONTRB	* Si el contador global esta a 0
+	BNE		BUCLIRB
+	BRA		LIFINZ	
+	
+BUCLIRB:MOVE.B		(A1),D4
+	CMP.B		#13,D4		* Si el caracter es el ASCII 13 salimos del bucle
+	BEQ		LIFINOK
+	CMP		#BRB+1999,A1	* Si estamos al final del buffer
+	BEQ		LIRESRB
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	ADD.L		#1,A1		* Avanzo el puntero de linea
+	BRA		LICOINRB
+
+LIRESRB:MOVE.L		#BRB,A1		* Coloco el puntero al inicio del buffer
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	BRA		LICOINRB
+
+LICOINRB:CMP 		A1,A2		* Si los punteros coinciden, D0 = 0 y acabo
+	BEQ		LIFINZ
+	BRA		BUCLIRB
+
+*** BUFFER TRANSMISION LINEA A ***
+LITRANSA:MOVE.L		PETA,A1		* A1 = PETA
+	MOVE.L		PITA,A2		* A2 = PITA
+	CMP 		A1,A2		* Si los punteros coinciden miramos el contador global de caracteres
+	BNE		BUCLITA
+	CMP		#0,CONTTA	* Si el contador global esta a 0
+	BNE		BUCLITA
+	BRA		LIFINZ	
+	
+BUCLITA:MOVE.B		(A1),D4
+	CMP.B		#13,D4		* Si el caracter es el ASCII 13 salimos del bucle
+	BEQ		LIFINOK
+	CMP		#BTA+1999,A1	* Si estamos al final del buffer
+	BEQ		LIRESTA
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	ADD.L		#1,A1		* Avanzo el puntero de linea
+	BRA		LICOINTA
+
+LIRESTA:MOVE.L		#BTA,A1		* Coloco el puntero al inicio del buffer
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	BRA		LICOINTA
+
+LICOINTA:CMP 		A1,A2		* Si los punteros coinciden, D0 = 0 y acabo
+	BEQ		LIFINZ
+	BRA		BUCLITA
+
+*** BUFFER TRANSMISION LINEA B ***
+LITRANSB:MOVE.L		PETB,A1		* A1 = PETB
+	MOVE.L		PITB,A2		* A2 = PITB
+	CMP 		A1,A2		* Si los punteros coinciden miramos el contador global de caracteres
+	BNE		BUCLITB
+	CMP		#0,CONTTB	* Si el contador global esta a 0
+	BNE		BUCLITB
+	BRA		LIFINZ	
+	
+BUCLITB:MOVE.B		(A1),D4
+	CMP.B		#13,D4		* Si el caracter es el ASCII 13 salimos del bucle
+	BEQ		LIFINOK
+	CMP		#BTB+1999,A1	* Si estamos al final del buffer
+	BEQ		LIRESTB
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	ADD.L		#1,A1		* Avanzo el puntero de linea
+	BRA		LICOINTB
+
+LIRESTB:MOVE.L		#BTB,A1		* Coloco el puntero al inicio del buffer
+	ADD.L		#1,D2		* Aumento el contador de caracteres de linea
+	BRA		LICOINTB
+
+LICOINTB:CMP 		A1,A2		* Si los punteros coinciden, D0 = 0 y acabo
+	BEQ		LIFINZ
+	BRA		BUCLITB
+*************** FINALES DE SUBRUTINA ***************
+LIFINOK:ADD.L		#1,D2		* Avanzamos contador porque el ASCII 13 tambien se cuenta
+	MOVE.L		D2,D0		* D0 = CONTADOR LINEA
+	RTS
+
+LIFINZ:	MOVE.L		#0,D0		* D0 = 0
+	RTS
 
 **************************** FIN LINEA ********************************************************
 
@@ -389,10 +509,17 @@ SCAN:   BREAK
 **************************** PROGRAMA PRINCIPAL ***********************************************
 INICIO: BSR	INIT
 	MOVE.L	#0,D0
-	MOVE.L  #$99,D1
-	BSR 	ESCCAR
-	MOVE.L	#0,D0
-	BSR	LEECAR
+	BSR 	LINEA
 	BREAK
 
 **************************** FIN PROGRAMA PRINCIPAL *******************************************
+
+*MOVE.L	#0,D0
+*	MOVE.L	#$1,D1
+*	BSR	ESCCAR
+*	MOVE.L	#2,D1
+*	BSR	ESCCAR
+*	MOVE.L	#$3,D1
+*	BSR	ESCCAR
+*	MOVE.L	#4,D1
+*	BSR	ESCCAR
