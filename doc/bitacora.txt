@@ -25,8 +25,15 @@ Bitacora del proyecto.
 	Se ha modificado LEECAR, creemos que funciona correctamente pero falta testear.
 	No se ha realizado ninguna entrega.
 	Tiempo: 4.45 horas.
+
 15/03/19:
 	Se ha modificado ESCCAR y se ha testeado un poco.
 	Se ha modificado LEECAR y se ha testeado un poco.
 	Se ha realizado la primera entrega. Hay fallos cuando se quiere escribir más de 2000 B.
 	Tiempo: 3 horas.
+
+18/03/19:
+	Se ha modificado ESCCAR y LEECAR y se han testeado. Aparentemente funciona correctamente.
+	Se ha empezado con LINEA. Se ha testeado algunos casos de prueba.
+	Se ha enviado otra correción.
+	Tiempo: 4 horas
