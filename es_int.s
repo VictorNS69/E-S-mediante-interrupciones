@@ -502,7 +502,48 @@ PRINT:  BREAK
 **************************** FIN PRINT ********************************************************
 
 **************************** SCAN *************************************************************
-SCAN:   BREAK
+SCAN:   LINK	A6,#-12			* Creacion del marco de pila
+	MOVE.L 	$4(A6),D1		* Tamaño en D1
+	MOVE.L 	$8(A6),D2		* Descriptor en D2
+	CMP.L	#0,D2			* Si Descriptor = 0
+	BEQ	SCANA
+	CMP.L	#1,D2			* Si Descriptor = 1
+	BEQ	SCANB
+
+SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	RTS
+
+SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
+	BLT	SCANE
+	MOVE.L	#0,D0			* Buffer de recepcion de linea A
+	BSR 	LINEA
+	CMP.L	#0,D0			* Si Tamaño de linea = 0
+	BEQ	SCANE
+	CMP.L	D0,D1			* Si el Tamaño de linea > Tamaño ESTO IGUAL ESTA MAL LOOOOL
+	BGT	SCANE
+	MOVE.L 	$12(A6),A0		* Puntero a buffer en A0
+	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
+	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
+	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
+
+SBUCA: 	MOVE.L  #0,D0			* Buffer interno de recepcion de la linea A
+	BSR	LEECAR			* Llamada a LEECAR
+	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
+	MOVE.L	D0,(A0)+		* Introducimos el caracter en el buffer de salida
+	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
+	MOVE.L  -4(A6),D1		* Recuperamos contador en D1
+	ADD.L   #1,D1			* Aumentamos contador
+	MOVE.L	-8(A6),D2		* Recuperamos tamaño de linea en D2
+	CMP.L	D2,D1			* Si Tamaño de linea = contador
+	BEQ	SCANF
+	BRA	SBUCA
+
+SCANB:	RTS
+
+SCANF:	MOVE.L	-4(A6),D0
+	UNLK 	A6
+	RTS
+
 
 **************************** FIN SCAN *********************************************************
 
