@@ -36,4 +36,14 @@ Bitacora del proyecto.
 	Se ha modificado ESCCAR y LEECAR y se han testeado. Aparentemente funciona correctamente.
 	Se ha empezado con LINEA. Se ha testeado algunos casos de prueba.
 	Se ha enviado otra correción.
-	Tiempo: 4 horas
+	Tiempo: 4 horas.
+	Se ha superado el primer hito.
+
+25/04/19:
+	Se ha realizado SCAN. 
+	No se ha probado.
+	No se ha realizado ninguna entraga.
+	Tiempo: 2 horas.
+
+
+
