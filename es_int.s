@@ -503,8 +503,8 @@ PRINT:  BREAK
 
 **************************** SCAN *************************************************************
 SCAN:   LINK	A6,#-12			* Creacion del marco de pila
-	MOVE.L 	$4(A6),D1		* Tamaño en D1
-	MOVE.L 	$8(A6),D2		* Descriptor en D2
+	MOVE.W 	$e(A6),D1		* Tamaño en D1
+	MOVE.W 	$c(A6),D2		* Descriptor en D2
 	CMP.L	#0,D2			* Si Descriptor = 0
 	BEQ	SCANA
 	CMP.L	#1,D2			* Si Descriptor = 1
@@ -519,22 +519,21 @@ SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BSR 	LINEA
 	CMP.L	#0,D0			* Si Tamaño de linea = 0
 	BEQ	SCANE
-	CMP.L	D0,D1			* Si el Tamaño de linea > Tamaño --------------------------------- ESTO IGUAL ESTA MAL
+	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
 	BGT	SCANE
-	MOVE.L 	$12(A6),A0		* Puntero a buffer en A0
+	MOVE.L 	$8(A6),A0		* Puntero a buffer en A0
 	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
 	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
 
 SBUCA: 	MOVE.L  #0,D0			* Buffer interno de recepcion de la linea A
 	BSR	LEECAR			* Llamada a LEECAR
-	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
+	MOVE.L	-8(A6),A0		* Recuperamos el puntero a buffer del marco de pila
 	MOVE.L	D0,(A0)+		* Introducimos el caracter en el buffer de salida
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
-	MOVE.L  -4(A6),D1		* Recuperamos contador en D1
-	ADD.L   #1,D1			* Aumentamos contador
-	MOVE.L	-8(A6),D2		* Recuperamos tamaño de linea en D2
-	CMP.L	D2,D1			* Si Tamaño de linea = contador
+	MOVE.L  #1,-4(A6)		* Aumentamos contador
+	MOVE.L 	-8(A6),D2		* Recuperamos tamaño de linea del marco de pila
+	CMP.L	-4(A6),D2		* Si Tamaño de linea = contador
 	BEQ	SCANF
 	BRA	SBUCA
 
@@ -573,8 +572,20 @@ SCANF:	MOVE.L	-4(A6),D0
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
 INICIO: BSR	INIT
+	MOVE.W	#500,-(A7)
+	MOVE.W	#0,-(A7)
+	MOVE.L	#$5000,-(A7)
+	MOVE.L 	#0,D5
+BUCASD:	MOVE.L	#0,D0
+	MOVE.L  #$1,D1
+	BSR	ESCCAR
+	ADD.L	#1,D5
+	CMP.L	#300,D5
+	BNE	BUCASD
 	MOVE.L	#0,D0
-	BSR 	LINEA
+	MOVE.L	#13,D1
+	BSR 	ESCCAR
+	BSR 	SCAN
 	BREAK
 
 **************************** FIN PROGRAMA PRINCIPAL *******************************************
