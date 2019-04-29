@@ -31,6 +31,8 @@ CONTRB:	DC.L	0	* contador de caracteres BRB
 CONTTA: DC.L    0	* contador de caracteres BTA
 CONTTB: DC.L	0	* contador de caracteres BTB
 
+CIMR:	DS.B	2	* Copia de IMR
+
 
 
 * Definición de equivalencias
@@ -71,7 +73,9 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 	MOVE.B		#%00000101,CRB 		* Transmision y recepcion activados B
 	MOVE.B 		#$040,IVR		* Vector de Interrrupcion nº 40
 	MOVE.B 		#%00100010,IMR		* Habilita las interrupciones de A y B
+	MOVE.B		#%00100010,CIMR		
 	MOVE.L 		#RTI,$100		* Inicio de RTI en tabla de interrupciones H'40*4
+	
 
 *** Inicializacion de buffers ***
 	MOVE.L		#BRA,PIRA
@@ -87,7 +91,77 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 **************************** FIN INIT *********************************************************
 
 **************************** RTI **************************************************************
-RTI:	RTS
+RTI:	MOVE.L		D0,-(A7)		* Salvamos todos los registros de datos
+	MOVE.L		D1,-(A7)
+	MOVE.L		D2,-(A7)
+	MOVE.L		D3,-(A7)
+	MOVE.L		D4,-(A7)
+	MOVE.L		D5,-(A7)
+	MOVE.L		D6,-(A7)
+	MOVE.L		D7,-(A7)
+	MOVE.L		A0,-(A7)		* Salvamos todos los registros de direcciones
+	MOVE.L		A1,-(A7)
+	MOVE.L		A2,-(A7)
+	MOVE.L		A3,-(A7)
+	MOVE.L		A4,-(A7)
+	MOVE.L		A5,-(A7)
+	MOVE.L		A6,-(A7)
+BUCRTI:	MOVE.B		IMR,CIMR		* Nos aseguramos de que CIMR es una copia siempre
+	MOVE.B		CIMR,D1			* Guardamos CIMR en D1
+	AND.B		ISR,D1			* Comparamos registro de estado con mascara de interrupcion
+	CMP.B		#0,D1			* Si el resultado es 0, no hay interrupciones 
+	BNE		CONTRTI
+	BRA		RTIFIN
+
+CONTRTI:BTST		#0,D1			* B0 --> Transmision A
+	BNE		RTITA
+	BTST		#1,D1			* B1 --> Recepcion A
+	BNE		RTIRA
+	BTST		#4,D1			* B4 --> Transmision B
+	BNE		RTITB
+	BTST		#5,D1			* B5 --> Recepcion B
+	BNE		RTIRB
+	BRA		RTIFIN
+
+RTITA:	MOVE.L		#2,D0			* Seleccionamos el buffer de transmision de A
+	BSR		LEECAR	
+	MOVE.B		D0,BTA			* Escribimos el caracter leido en el buffer correspondiente
+	BRA		BUCRTI
+
+RTIRA:	MOVE.L		#0,D0			* Seleccionamos el buffer de recepcion de A
+	MOVE.B		BRA,D1			* Leemos el caracter a escribir del buffer correspondiente
+	BSR		ESCCAR
+	BRA		BUCRTI
+
+RTITB:	MOVE.L		#3,D0			* Seleccionamos el buffer de transmision de B
+	BSR		LEECAR	
+	MOVE.B		D0,BTB			* Escribimos el caracter leido en el buffer correspondiente
+	BRA		BUCRTI
+
+RTIRB:	MOVE.L		#1,D0			* Seleccionamos el buffer de recepcion de B
+	MOVE.B		BRB,D1			* Leemos el caracter a escribir del buffer correspondiente
+	BSR		ESCCAR
+	BRA		BUCRTI
+	
+*	COMPROBAR SI ESCRIBIMOS HASTA SALTO DE LINEA
+*	MODIFICAR IMR (FACIL)
+
+RTIFIN: MOVE.L		(A7)+,D0		* Restauramos los registros de datos
+	MOVE.L		(A7)+,D1
+	MOVE.L		(A7)+,D2
+	MOVE.L		(A7)+,D3
+	MOVE.L		(A7)+,D4
+	MOVE.L		(A7)+,D5
+	MOVE.L		(A7)+,D6
+	MOVE.L		(A7)+,D7	
+	MOVE.L		(A7)+,A0		* Restauramos los registros de direcciones
+	MOVE.L		(A7)+,A1
+	MOVE.L		(A7)+,A2
+	MOVE.L		(A7)+,A3
+	MOVE.L		(A7)+,A4
+	MOVE.L		(A7)+,A5
+	MOVE.L		(A7)+,A6			
+	RTE
 
 **************************** FIN RTI **********************************************************
 
@@ -503,14 +577,15 @@ PRINT:  BREAK
 
 **************************** SCAN *************************************************************
 SCAN:   LINK	A6,#-12			* Creacion del marco de pila
-	MOVE.W 	$e(A6),D1		* Tamaño en D1
-	MOVE.W 	$c(A6),D2		* Descriptor en D2
+	MOVE.W 	14(A6),D1		* Tamaño en D1
+	MOVE.W 	12(A6),D2		* Descriptor en D2
 	CMP.L	#0,D2			* Si Descriptor = 0
 	BEQ	SCANA
 	CMP.L	#1,D2			* Si Descriptor = 1
 	BEQ	SCANB
 
 SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	UNLK 	A6
 	RTS
 
 SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
@@ -521,32 +596,31 @@ SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BEQ	SCANE
 	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
 	BGT	SCANE
-	MOVE.L 	$8(A6),A0		* Puntero a buffer en A0
+	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
 	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
 	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
 
 SBUCA: 	MOVE.L  #0,D0			* Buffer interno de recepcion de la linea A
 	BSR	LEECAR			* Llamada a LEECAR
-	MOVE.L	-8(A6),A0		* Recuperamos el puntero a buffer del marco de pila
-	MOVE.L	D0,(A0)+		* Introducimos el caracter en el buffer de salida
+	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
+	MOVE.B	D0,(A0)+		* Introducimos el caracter en el buffer de salida
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
-	MOVE.L  #1,-4(A6)		* Aumentamos contador
+	ADD.L 	#1,-4(A6)		* Aumentamos contador
 	MOVE.L 	-8(A6),D2		* Recuperamos tamaño de linea del marco de pila
 	CMP.L	-4(A6),D2		* Si Tamaño de linea = contador
 	BEQ	SCANF
 	BRA	SBUCA
 
-* -----------------TESTEAR ESTO
 SCANB:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
 	MOVE.L	#1,D0			* Buffer de recepcion de linea B
 	BSR 	LINEA
 	CMP.L	#0,D0			* Si Tamaño de linea = 0
 	BEQ	SCANE
-	CMP.L	D0,D1			* Si el Tamaño de linea > Tamaño --------------------------------- ESTO IGUAL ESTA MAL
+	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
 	BGT	SCANE
-	MOVE.L 	$12(A6),A0		* Puntero a buffer en A0
+	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
 	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
 	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
@@ -554,14 +628,13 @@ SCANB:	CMP.L	#0,D1			* Si Tamaño < 0
 SBUCB: 	MOVE.L  #1,D0			* Buffer interno de recepcion de la linea B
 	BSR	LEECAR			* Llamada a LEECAR
 	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
-	MOVE.L	D0,(A0)+		* Introducimos el caracter en el buffer de salida
+	MOVE.B	D0,(A0)+		* Introducimos el caracter en el buffer de salida
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
-	MOVE.L  -4(A6),D1		* Recuperamos contador en D1
-	ADD.L   #1,D1			* Aumentamos contador
-	MOVE.L	-8(A6),D2		* Recuperamos tamaño de linea en D2
-	CMP.L	D2,D1			* Si Tamaño de linea = contador
+	ADD.L 	#1,-4(A6)		* Aumentamos contador
+	MOVE.L 	-8(A6),D2		* Recuperamos tamaño de linea del marco de pila
+	CMP.L	-4(A6),D2		* Si Tamaño de linea = contador
 	BEQ	SCANF
-	BRA	SBUCB
+	BRA	SBUCA
 
 SCANF:	MOVE.L	-4(A6),D0
 	UNLK 	A6
@@ -577,7 +650,7 @@ INICIO: BSR	INIT
 	MOVE.L	#$5000,-(A7)
 	MOVE.L 	#0,D5
 BUCASD:	MOVE.L	#0,D0
-	MOVE.L  #$1,D1
+	MOVE.B  #$1,D1
 	BSR	ESCCAR
 	ADD.L	#1,D5
 	CMP.L	#300,D5
