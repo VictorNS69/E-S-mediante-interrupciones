@@ -32,7 +32,8 @@ CONTTA: DC.L    0	* contador de caracteres BTA
 CONTTB: DC.L	0	* contador de caracteres BTB
 
 CIMR:	DS.B	2	* Copia de IMR
-
+FLAGA:	DS.B	1	* Flag del buffer de transmision A
+FLAGB:	DS.B	1	* Flag del buffer de transmision B
 
 
 * Definición de equivalencias
@@ -57,7 +58,7 @@ CSRB    EQU     $effc13       * de seleccion de reloj B (escritura)
 CRB     EQU     $effc15       * de control B (escritura)
 RBB     EQU     $effc17       * buffer recepcion B (lectura)
 TBB     EQU     $effc17       * buffer transmision B (escritura)
-IVR     EQU     $effc09       * de vector de interrupcion
+IVR     EQU     $effc19       * de vector de interrupcion
 
 **************************** INIT *************************************************************
 INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
@@ -75,6 +76,8 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 	MOVE.B 		#%00100010,IMR		* Habilita las interrupciones de A y B
 	MOVE.B		#%00100010,CIMR		
 	MOVE.L 		#RTI,$100		* Inicio de RTI en tabla de interrupciones H'40*4
+	MOVE.B		#0,FLAGA		* Inicializamos flags de buffer de transmision a 0
+	MOVE.B		#0,FLAGB
 	
 
 *** Inicializacion de buffers ***
@@ -123,44 +126,71 @@ CONTRTI:BTST		#0,D1			* B0 --> Transmision A
 	BNE		RTIRB
 	BRA		RTIFIN
 
-RTITA:	MOVE.L		#2,D0			* Seleccionamos el buffer de transmision de A
+RTITA:	CMP.B		#0,FLAGA		
+	BNE		ACTA
+	MOVE.L		#2,D0			* Seleccionamos el buffer de transmision de A
 	BSR		LEECAR	
 	MOVE.B		D0,BTA			* Escribimos el caracter leido en el buffer correspondiente
+	CMP.B		#13,D0			* Comprobamos que el caracter leido no sea un retorno de carro
+	BNE		BUCRTI
+	MOVE.B		#1,FLAGA		* Ponemos el flag A a 1
 	BRA		BUCRTI
+
+ACTA:	MOVE.B 		#0,FLAGA		* Ponemos el flag A a 0
+	MOVE.B		#10,BTA			* Insertamos un salto de linea en el buffer
+	MOVE.B		#2,D0
+	BSR 		LINEA			* Llamada a linea para comprobar si quedan mas lineas
+	CMP.L		#0,D0
+	BNE		BUCRTI 
+	BCLR		#0,CIMR			* Inhibimos la interrupcion en la mascara
+	MOVE.B		CIMR,IMR		* Modificamos IMR
+	BRA 		BUCRTI
 
 RTIRA:	MOVE.L		#0,D0			* Seleccionamos el buffer de recepcion de A
 	MOVE.B		BRA,D1			* Leemos el caracter a escribir del buffer correspondiente
 	BSR		ESCCAR
 	BRA		BUCRTI
 
-RTITB:	MOVE.L		#3,D0			* Seleccionamos el buffer de transmision de B
+RTITB:	CMP.B		#0,FLAGB		
+	BNE		ACTB
+	MOVE.L		#3,D0			* Seleccionamos el buffer de transmision de B
 	BSR		LEECAR	
 	MOVE.B		D0,BTB			* Escribimos el caracter leido en el buffer correspondiente
+	CMP.B		#13,D0			* Comprobamos que el caracter leido no sea un retorno de carro
+	BNE		BUCRTI
+	MOVE.B		#1,FLAGB		* Ponemos el flag B a 1
 	BRA		BUCRTI
+
+ACTB:	MOVE.B 		#0,FLAGB		* Ponemos el flag B a 0
+	MOVE.B		#10,BTB 		* Insertamos un salto de linea en el buffer
+	MOVE.B		#3,D0
+	BSR 		LINEA			* Llamada a linea para comprobar si quedan mas lineas
+	CMP.L		#0,D0
+	BNE		BUCRTI 
+	BCLR		#4,CIMR			* Inhibimos la interrupcion en la mascara
+	MOVE.B		CIMR,IMR		* Modificamos IMR
+	BRA 		BUCRTI
 
 RTIRB:	MOVE.L		#1,D0			* Seleccionamos el buffer de recepcion de B
 	MOVE.B		BRB,D1			* Leemos el caracter a escribir del buffer correspondiente
 	BSR		ESCCAR
 	BRA		BUCRTI
-	
-*	COMPROBAR SI ESCRIBIMOS HASTA SALTO DE LINEA
-*	MODIFICAR IMR (FACIL)
 
-RTIFIN: MOVE.L		(A7)+,D0		* Restauramos los registros de datos
-	MOVE.L		(A7)+,D1
-	MOVE.L		(A7)+,D2
-	MOVE.L		(A7)+,D3
-	MOVE.L		(A7)+,D4
-	MOVE.L		(A7)+,D5
-	MOVE.L		(A7)+,D6
-	MOVE.L		(A7)+,D7	
-	MOVE.L		(A7)+,A0		* Restauramos los registros de direcciones
-	MOVE.L		(A7)+,A1
-	MOVE.L		(A7)+,A2
-	MOVE.L		(A7)+,A3
-	MOVE.L		(A7)+,A4
+RTIFIN: MOVE.L		(A7)+,A6		* Restauramos los registros de datos
 	MOVE.L		(A7)+,A5
-	MOVE.L		(A7)+,A6			
+	MOVE.L		(A7)+,A4
+	MOVE.L		(A7)+,A3
+	MOVE.L		(A7)+,A2
+	MOVE.L		(A7)+,A1
+	MOVE.L		(A7)+,A0			
+	MOVE.L		(A7)+,D7
+	MOVE.L		(A7)+,D6	
+	MOVE.L		(A7)+,D5		* Restauramos los registros de direcciones
+	MOVE.L		(A7)+,D4
+	MOVE.L		(A7)+,D3
+	MOVE.L		(A7)+,D2
+	MOVE.L		(A7)+,D1
+	MOVE.L		(A7)+,D0
 	RTE
 
 **************************** FIN RTI **********************************************************
@@ -576,7 +606,7 @@ PRINT:  BREAK
 **************************** FIN PRINT ********************************************************
 
 **************************** SCAN *************************************************************
-SCAN:   LINK	A6,#-12			* Creacion del marco de pila
+SCAN:   LINK	A6,#0			* Creacion del marco de pila
 	MOVE.W 	14(A6),D1		* Tamaño en D1
 	MOVE.W 	12(A6),D2		* Descriptor en D2
 	CMP.L	#0,D2			* Si Descriptor = 0
@@ -585,6 +615,9 @@ SCAN:   LINK	A6,#-12			* Creacion del marco de pila
 	BEQ	SCANB
 
 SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
 	UNLK 	A6
 	RTS
 
@@ -592,18 +625,18 @@ SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
 	MOVE.L	#0,D0			* Buffer de recepcion de linea A
 	BSR 	LINEA
-	CMP.L	#0,D0			* Si Tamaño de linea = 0
-	BEQ	SCANE
 	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
-	BGT	SCANE
+	BGT	SCAN0
 	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
-	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
-	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
-	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
+	MOVE.L	#0,-(A7)		* Guardamos contador en el marco de pila
+	MOVE.L 	D0,-(A7)		* Guardamos el numero de caracteres de una linea en el marco de pila
+	MOVE.L	A0,-(A7)		* Guardamos el puntero a buffer en el marco de pila
 
 SBUCA: 	MOVE.L  #0,D0			* Buffer interno de recepcion de la linea A
 	BSR	LEECAR			* Llamada a LEECAR
 	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
+	CMP.L	#$FFFFFFFF,D0
+	BEQ	SBUCA
 	MOVE.B	D0,(A0)+		* Introducimos el caracter en el buffer de salida
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
 	ADD.L 	#1,-4(A6)		* Aumentamos contador
@@ -616,14 +649,12 @@ SCANB:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
 	MOVE.L	#1,D0			* Buffer de recepcion de linea B
 	BSR 	LINEA
-	CMP.L	#0,D0			* Si Tamaño de linea = 0
-	BEQ	SCANE
 	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
-	BGT	SCANE
+	BGT	SCAN0
 	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
-	MOVE.L	#0,-4(A6)		* Guardamos contador en el marco de pila
-	MOVE.L 	D0,-8(A6)		* Guardamos el numero de caracteres de una linea en el marco de pila
-	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
+	MOVE.L	#0,-(A7)		* Guardamos contador en el marco de pila
+	MOVE.L 	D0,-(A7)		* Guardamos el numero de caracteres de una linea en el marco de pila
+	MOVE.L	A0,-(A7)		* Guardamos el puntero a buffer en el marco de pila
 
 SBUCB: 	MOVE.L  #1,D0			* Buffer interno de recepcion de la linea B
 	BSR	LEECAR			* Llamada a LEECAR
@@ -636,7 +667,17 @@ SBUCB: 	MOVE.L  #1,D0			* Buffer interno de recepcion de la linea B
 	BEQ	SCANF
 	BRA	SBUCA
 
+SCAN0:	MOVE.L	#0,D0
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	UNLK 	A6
+	RTS	
+
 SCANF:	MOVE.L	-4(A6),D0
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
 	UNLK 	A6
 	RTS
 
@@ -644,24 +685,34 @@ SCANF:	MOVE.L	-4(A6),D0
 **************************** FIN SCAN *********************************************************
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
-INICIO: BSR	INIT
+INICIO:	BSR	INIT
+	MOVE.W	#$2000,SR
 	MOVE.W	#500,-(A7)
 	MOVE.W	#0,-(A7)
 	MOVE.L	#$5000,-(A7)
-	MOVE.L 	#0,D5
-BUCASD:	MOVE.L	#0,D0
-	MOVE.B  #$1,D1
-	BSR	ESCCAR
-	ADD.L	#1,D5
-	CMP.L	#300,D5
-	BNE	BUCASD
-	MOVE.L	#0,D0
-	MOVE.L	#13,D1
-	BSR 	ESCCAR
-	BSR 	SCAN
+BUCASD:	BSR	SCAN
+	CMP.L	#0,D0
+	BEQ	BUCASD
 	BREAK
 
-**************************** FIN PROGRAMA PRINCIPAL *******************************************
+
+
+
+*INICIO: BSR	INIT
+*	MOVE.W	#500,-(A7)
+*	MOVE.W	#0,-(A7)
+*	MOVE.L	#$5000,-(A7)
+*	MOVE.L 	#0,D5
+*BUCASD:	MOVE.L	#0,D0
+*	MOVE.B  #$1,D1
+*	BSR	ESCCAR
+*	CMP.L	#300,D5
+*	BNE	BUCASD
+*	MOVE.L	#0,D0
+*	MOVE.L	#13,D1
+*	BSR 	ESCCAR
+*	BSR 	SCAN
+*	BREAK
 
 *MOVE.L	#0,D0
 *	MOVE.L	#$1,D1
@@ -672,3 +723,6 @@ BUCASD:	MOVE.L	#0,D0
 *	BSR	ESCCAR
 *	MOVE.L	#4,D1
 *	BSR	ESCCAR
+
+
+**************************** FIN PROGRAMA PRINCIPAL *******************************************
