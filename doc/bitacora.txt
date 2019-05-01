@@ -49,5 +49,13 @@ Bitacora del proyecto.
 	Tenemos algunas dudas que le preguntaremos al profesor.
 	No se ha realizado ninguna entrega.
 	Tiempo: 1.30 horas.
-
+29/04/2019:
+	Se ha empezado RTI y se sigue trabanando en SCAN.
+	No se ha realizado ninguna entrega.
+	Tiempo: 5 horas.
+30/04/2019:
+	Se sigue trabanajdo en RTI.
+	SCAN no se ha testeado (con RTI).
+	No se ha realizado ninguna entrega.
+	Tiempo: 5h.
 
