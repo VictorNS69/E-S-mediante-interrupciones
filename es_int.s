@@ -74,10 +74,10 @@ INIT:	MOVE.B          #%00010000,CRA      	* Reinicia el puntero MR1A
 	MOVE.B		#%00000101,CRB 		* Transmision y recepcion activados B
 	MOVE.B 		#$040,IVR		* Vector de Interrrupcion nº 40
 	MOVE.B 		#%00100010,IMR		* Habilita las interrupciones de A y B
-	MOVE.B		#%00100010,CIMR		
+	MOVE.B		#%00100010,CIMR		* Copia de IMR
 	MOVE.L 		#RTI,$100		* Inicio de RTI en tabla de interrupciones H'40*4
-	MOVE.B		#0,FLAGA		* Inicializamos flags de buffer de transmision a 0
-	MOVE.B		#0,FLAGB
+	MOVE.B		#0,FLAGA		* Inicializamos flag de buffer de transmision A a 0
+	MOVE.B		#0,FLAGB		* Inicializamos flag de buffer de transmision B a 0
 	
 
 *** Inicializacion de buffers ***
@@ -176,7 +176,7 @@ RTIRB:	MOVE.L		#1,D0			* Seleccionamos el buffer de recepcion de B
 	BSR		ESCCAR
 	BRA		BUCRTI
 
-RTIFIN: MOVE.L		(A7)+,A6		* Restauramos los registros de datos
+RTIFIN: MOVE.L		(A7)+,A6		* Restauramos los registros de direcciones
 	MOVE.L		(A7)+,A5
 	MOVE.L		(A7)+,A4
 	MOVE.L		(A7)+,A3
@@ -185,7 +185,7 @@ RTIFIN: MOVE.L		(A7)+,A6		* Restauramos los registros de datos
 	MOVE.L		(A7)+,A0			
 	MOVE.L		(A7)+,D7
 	MOVE.L		(A7)+,D6	
-	MOVE.L		(A7)+,D5		* Restauramos los registros de direcciones
+	MOVE.L		(A7)+,D5		 * Restauramos los registros de datos
 	MOVE.L		(A7)+,D4
 	MOVE.L		(A7)+,D3
 	MOVE.L		(A7)+,D2
