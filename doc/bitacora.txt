@@ -63,4 +63,6 @@ Bitacora del proyecto.
 	Se han testeado ambas.
 	Se ha realizado una entrega.
 	Tiempo: 5h.
+	Se han pasado las pruebas de SCAN.
+07/05/2019:
 	
