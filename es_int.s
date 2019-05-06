@@ -105,18 +105,14 @@ RTI:	MOVE.L		D0,-(A7)		* Salvamos todos los registros de datos
 	MOVE.L		A0,-(A7)		* Salvamos todos los registros de direcciones
 	MOVE.L		A1,-(A7)
 	MOVE.L		A2,-(A7)
-	MOVE.L		A3,-(A7)
+	MOVE.L		A3,-(A7) 
 	MOVE.L		A4,-(A7)
 	MOVE.L		A5,-(A7)
 	MOVE.L		A6,-(A7)
-BUCRTI:	MOVE.B		IMR,CIMR		* Nos aseguramos de que CIMR es una copia siempre
+BUCRTI:	MOVE.L		#0,D1			* Reseteamos D1 por comodidad visual
 	MOVE.B		CIMR,D1			* Guardamos CIMR en D1
 	AND.B		ISR,D1			* Comparamos registro de estado con mascara de interrupcion
-	CMP.B		#0,D1			* Si el resultado es 0, no hay interrupciones 
-	BNE		CONTRTI
-	BRA		RTIFIN
-
-CONTRTI:BTST		#0,D1			* B0 --> Transmision A
+	BTST		#0,D1			* B0 --> Transmision A
 	BNE		RTITA
 	BTST		#1,D1			* B1 --> Recepcion A
 	BNE		RTIRA
@@ -130,14 +126,14 @@ RTITA:	CMP.B		#0,FLAGA
 	BNE		ACTA
 	MOVE.L		#2,D0			* Seleccionamos el buffer de transmision de A
 	BSR		LEECAR	
-	MOVE.B		D0,BTA			* Escribimos el caracter leido en el buffer correspondiente
+	MOVE.B		D0,TBA			* Escribimos el caracter leido en el buffer correspondiente
 	CMP.B		#13,D0			* Comprobamos que el caracter leido no sea un retorno de carro
 	BNE		BUCRTI
 	MOVE.B		#1,FLAGA		* Ponemos el flag A a 1
 	BRA		BUCRTI
 
 ACTA:	MOVE.B 		#0,FLAGA		* Ponemos el flag A a 0
-	MOVE.B		#10,BTA			* Insertamos un salto de linea en el buffer
+	MOVE.B		#10,TBA			* Insertamos un salto de linea en el buffer
 	MOVE.B		#2,D0
 	BSR 		LINEA			* Llamada a linea para comprobar si quedan mas lineas
 	CMP.L		#0,D0
@@ -147,7 +143,7 @@ ACTA:	MOVE.B 		#0,FLAGA		* Ponemos el flag A a 0
 	BRA 		BUCRTI
 
 RTIRA:	MOVE.L		#0,D0			* Seleccionamos el buffer de recepcion de A
-	MOVE.B		BRA,D1			* Leemos el caracter a escribir del buffer correspondiente
+	MOVE.B		RBA,D1			* Leemos el caracter a escribir del buffer correspondiente
 	BSR		ESCCAR
 	BRA		BUCRTI
 
@@ -155,14 +151,14 @@ RTITB:	CMP.B		#0,FLAGB
 	BNE		ACTB
 	MOVE.L		#3,D0			* Seleccionamos el buffer de transmision de B
 	BSR		LEECAR	
-	MOVE.B		D0,BTB			* Escribimos el caracter leido en el buffer correspondiente
+	MOVE.B		D0,TBB			* Escribimos el caracter leido en el buffer correspondiente
 	CMP.B		#13,D0			* Comprobamos que el caracter leido no sea un retorno de carro
 	BNE		BUCRTI
 	MOVE.B		#1,FLAGB		* Ponemos el flag B a 1
 	BRA		BUCRTI
 
 ACTB:	MOVE.B 		#0,FLAGB		* Ponemos el flag B a 0
-	MOVE.B		#10,BTB 		* Insertamos un salto de linea en el buffer
+	MOVE.B		#10,TBB			* Insertamos un salto de linea en el buffer
 	MOVE.B		#3,D0
 	BSR 		LINEA			* Llamada a linea para comprobar si quedan mas lineas
 	CMP.L		#0,D0
@@ -172,7 +168,7 @@ ACTB:	MOVE.B 		#0,FLAGB		* Ponemos el flag B a 0
 	BRA 		BUCRTI
 
 RTIRB:	MOVE.L		#1,D0			* Seleccionamos el buffer de recepcion de B
-	MOVE.B		BRB,D1			* Leemos el caracter a escribir del buffer correspondiente
+	MOVE.B		RBB,D1			* Leemos el caracter a escribir del buffer correspondiente
 	BSR		ESCCAR
 	BRA		BUCRTI
 
@@ -625,6 +621,8 @@ SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
 	MOVE.L	#0,D0			* Buffer de recepcion de linea A
 	BSR 	LINEA
+	CMP.L	#0,D0			* Si no hay linea
+	BEQ	SCAN0
 	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
 	BGT	SCAN0
 	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
@@ -636,7 +634,7 @@ SBUCA: 	MOVE.L  #0,D0			* Buffer interno de recepcion de la linea A
 	BSR	LEECAR			* Llamada a LEECAR
 	MOVE.L	-12(A6),A0		* Recuperamos el puntero a buffer del marco de pila
 	CMP.L	#$FFFFFFFF,D0
-	BEQ	SBUCA
+	BEQ	SCANF
 	MOVE.B	D0,(A0)+		* Introducimos el caracter en el buffer de salida
 	MOVE.L	A0,-12(A6)		* Guardamos el puntero a buffer en el marco de pila
 	ADD.L 	#1,-4(A6)		* Aumentamos contador
@@ -649,6 +647,8 @@ SCANB:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
 	MOVE.L	#1,D0			* Buffer de recepcion de linea B
 	BSR 	LINEA
+	CMP.L	#0,D0			* Si no hay linea
+	BEQ	SCAN0
 	CMP.L	D1,D0			* Si el Tamaño de linea > Tamaño
 	BGT	SCAN0
 	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
@@ -688,8 +688,9 @@ SCANF:	MOVE.L	-4(A6),D0
 INICIO:	BSR	INIT
 	MOVE.W	#$2000,SR
 	MOVE.W	#500,-(A7)
-	MOVE.W	#0,-(A7)
+	MOVE.W	#1,-(A7)
 	MOVE.L	#$5000,-(A7)
+	
 BUCASD:	BSR	SCAN
 	CMP.L	#0,D0
 	BEQ	BUCASD
