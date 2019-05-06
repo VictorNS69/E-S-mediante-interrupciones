@@ -58,4 +58,9 @@ Bitacora del proyecto.
 	SCAN no se ha testeado (con RTI).
 	No se ha realizado ninguna entrega.
 	Tiempo: 5h.
-
+06/05/2019:
+	Se ha mejorado RTI y SCAN. 
+	Se han testeado ambas.
+	Se ha realizado una entrega.
+	Tiempo: 5h.
+	
