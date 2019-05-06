@@ -665,7 +665,7 @@ SBUCB: 	MOVE.L  #1,D0			* Buffer interno de recepcion de la linea B
 	MOVE.L 	-8(A6),D2		* Recuperamos tamaño de linea del marco de pila
 	CMP.L	-4(A6),D2		* Si Tamaño de linea = contador
 	BEQ	SCANF
-	BRA	SBUCA
+	BRA	SBUCB
 
 SCAN0:	MOVE.L	#0,D0
 	MOVE.L	(A7)+,D7
