@@ -35,7 +35,6 @@ CIMR:	DS.B	2	* Copia de IMR
 FLAGA:	DS.B	1	* Flag del buffer de transmision A
 FLAGB:	DS.B	1	* Flag del buffer de transmision B
 
-
 * Definición de equivalencias
 *********************************
 *** Puerto A ***
@@ -597,7 +596,95 @@ LIFINZ:	MOVE.L		#0,D0		* D0 = 0
 **************************** FIN LINEA ********************************************************
 
 **************************** PRINT ************************************************************
-PRINT:  BREAK
+PRINT:  LINK 	A6,#0			* Creacion del marco de pila
+	MOVE.W	14(A6),D1		* Tamaño en D1
+	MOVE.W	12(A6),D2		* Descriptor en D2
+	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
+	CMP.L	#0,D1			* Si Tamaño < 0
+	BLT	PRINTE
+	MOVE.L	#0,D1			* Reseteamos D1 para comodidad visual
+	MOVE.L	#0,-(A7)		* Guardo contador en pila
+	MOVE.L 	A0,-(A7)		* Guardo puntero a buffer en pila
+	CMP.L	#0,D2			* Si Descriptor = 0
+	BEQ	PRINTA
+	CMP.L	#1,D2			* Si Descriptor = 1
+	BEQ	PRINTB
+	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	UNLK 	A6
+	RTS
+
+PRINTA:	MOVE.L  -8(A6),A1		* Puntero a buffer en A1
+	MOVE.B	(A1),D1			* Caracter de puntero de buffer en D1
+	CMP.L	#13,D1			* Si el caracter es un retorno de carro
+	BEQ	RETA
+	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
+	BSR	ESCCAR
+	CMP	#0,D0			* Si el buffer interno esta lleno
+	BNE	PRINTF
+	ADD.L	#1,-4(A6)		* Aumento contador
+	ADD.L	#1,-8(A6)		* Avanzo puntero
+	MOVE.L	-4(A6),D1		* Contador a D1
+	MOVE.W	14(A6),D2		* Tamaño a D2
+	CMP.L	D2,D1			* Si contador = tamaño
+	BEQ	PRINTF
+	BRA	PRINTA
+
+RETA:	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
+	BSR	ESCCAR
+	CMP	#0,D0			* Si el buffer interno esta lleno
+	BNE	PRINTF
+	BSET	#0,CIMR
+	MOVE.B	CIMR,IMR
+	ADD.L	#1,-4(A6)		* Aumento contador
+	ADD.L	#1,-8(A6)		* Avanzo puntero
+	MOVE.L	-4(A6),D1		* Contador a D1
+	MOVE.W	14(A6),D2		* Tamaño a D2
+	CMP.L	D2,D1			* Si contador = tamaño
+	BEQ	PRINTF
+	BRA	PRINTA
+
+	
+PRINTB: MOVE.L  -8(A6),A1		* Puntero a buffer en A1
+	MOVE.B	(A1),D1			* Caracter de puntero de buffer en D1
+	CMP.L	#13,D1			* Si el caracter es un retorno de carro
+	BEQ	RETB
+	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
+	BSR	ESCCAR
+	CMP	#0,D0			* Si el buffer interno esta lleno
+	BNE	PRINTF
+	ADD.L	#1,-4(A6)		* Aumento contador
+	ADD.L	#1,-8(A6)		* Avanzo puntero
+	MOVE.L	-4(A6),D1		* Contador a D1
+	MOVE.W	14(A6),D2		* Tamaño a D2
+	CMP.L	D2,D1			* Si contador = tamaño
+	BEQ	PRINTF
+	BRA	PRINTB
+
+RETB:	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
+	BSR	ESCCAR
+	CMP	#0,D0			* Si el buffer interno esta lleno
+	BNE	PRINTF
+	BSET	#0,CIMR
+	MOVE.B	CIMR,IMR
+	ADD.L	#1,-4(A6)		* Aumento contador
+	ADD.L	#1,-8(A6)		* Avanzo puntero
+	MOVE.L	-4(A6),D1		* Contador a D1
+	MOVE.W	14(A6),D2		* Tamaño a D2
+	CMP.L	D2,D1			* Si contador = tamaño
+	BEQ	PRINTF
+	BRA	PRINTB
+
+PRINTF:	MOVE.L	-4(A6),D0
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	UNLK	A6
+	RTS
+
+PRINTE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	UNLK 	A6
+	RTS
 
 **************************** FIN PRINT ********************************************************
 
@@ -609,13 +696,10 @@ SCAN:   LINK	A6,#0			* Creacion del marco de pila
 	BEQ	SCANA
 	CMP.L	#1,D2			* Si Descriptor = 1
 	BEQ	SCANB
-
-SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
-	MOVE.L	(A7)+,D7
-	MOVE.L	(A7)+,D7
-	MOVE.L	(A7)+,D7
+	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
 	UNLK 	A6
 	RTS
+
 
 SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
@@ -672,6 +756,13 @@ SCAN0:	MOVE.L	#0,D0
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
 	UNLK 	A6
+	RTS
+
+SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	UNLK 	A6
 	RTS	
 
 SCANF:	MOVE.L	-4(A6),D0
@@ -685,19 +776,50 @@ SCANF:	MOVE.L	-4(A6),D0
 **************************** FIN SCAN *********************************************************
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
-INICIO:	BSR	INIT
-	MOVE.W	#$2000,SR
-	MOVE.W	#500,-(A7)
-	MOVE.W	#1,-(A7)
-	MOVE.L	#$5000,-(A7)
-	
-BUCASD:	BSR	SCAN
-	CMP.L	#0,D0
-	BEQ	BUCASD
+
+INICIO:	BSR INIT
 	BREAK
 
+**************************** CEMENTERIO DE PRUEBAS ********************************************
+*INICIO:	BSR	INIT
+*	MOVE.W	#$2000,SR
+*	MOVE.W	#2,-(A7)
+*	MOVE.W	#0,-(A7)
+*	MOVE.L	#$5000,A0
+*	MOVE.B	#$48,(A0)+
+*	MOVE.B	#$4F,(A0)+
+*	MOVE.L	#$5000,-(A7)
+*	BSR	PRINT
+*	MOVE.W	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*
+*	MOVE.W	#11,-(A7)
+*	MOVE.W	#0,-(A7)
+*	MOVE.L	#$5000,A0
+*	MOVE.B	#$4C,(A0)+
+*	MOVE.B	#$41,(A0)+
+*	MOVE.B	#13,(A0)+
+*	MOVE.B	#$43,(A0)+
+*	MOVE.B	#$41,(A0)+
+*	MOVE.B	#$52,(A0)+
+*	MOVE.B	#$4D,(A0)+
+*	MOVE.B	#$4F,(A0)+
+*	MOVE.B	#13,(A0)+
+*	MOVE.L	#$5000,-(A7)
+*	BSR	PRINT
+*	BREAK
 
 
+*INICIO:	BSR	INIT
+*	MOVE.W	#$2000,SR
+*	MOVE.W	#500,-(A7)
+*	MOVE.W	#1,-(A7)
+*	MOVE.L	#$5000,-(A7)
+	
+*BUCASD:	BSR	SCAN
+*	CMP.L	#0,D0
+*	BEQ	BUCASD
+*	BREAK
 
 *INICIO: BSR	INIT
 *	MOVE.W	#500,-(A7)
