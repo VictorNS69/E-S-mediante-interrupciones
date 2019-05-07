@@ -65,4 +65,7 @@ Bitacora del proyecto.
 	Tiempo: 5h.
 	Se han pasado las pruebas de SCAN.
 07/05/2019:
-	
+	Se ha realizado PRINT.
+	Se ha testeado PRINT.
+	Se ha realizado una entrega.
+	Tiempo: 5h.
