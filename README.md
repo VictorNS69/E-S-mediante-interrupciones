@@ -25,7 +25,7 @@ La [documentación del proyecto](/doc/manual.pdf) incluye los siguientes apartad
 
 Además, se incluye una [tabla de correspondencia](/doc/tabla-correspondencia.pdf) entre sentencias ensamblador del _MC88110_ y del _MC68000_.
 
-También hay una [tabla](/doc/tabla ascii .png) con la correspondencía entre carácteres ASCII y hexadecimales.
+También hay una [tabla](https://github.com/VictorNS69/E-S-mediante-interrupciones/blob/master/doc/tabla%20ascii.png) con la correspondencía entre carácteres ASCII y hexadecimales.
 # Ensamblar y simular
 Como se menciona en la [documentación del proyecto](/doc/manual.pdf), es aconsejable seguir los pasos de instalación para que todo funcione correctamente.
 - Ensamblar:
