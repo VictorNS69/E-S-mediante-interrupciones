@@ -602,6 +602,7 @@ PRINT:  LINK 	A6,#0			* Creacion del marco de pila
 	MOVE.L 	8(A6),A0		* Puntero a buffer en A0
 	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	PRINTE
+	BEQ	PRINTF
 	MOVE.L	#0,D1			* Reseteamos D1 para comodidad visual
 	MOVE.L	#0,-(A7)		* Guardo contador en pila
 	MOVE.L 	A0,-(A7)		* Guardo puntero a buffer en pila
@@ -617,7 +618,7 @@ PRINT:  LINK 	A6,#0			* Creacion del marco de pila
 
 PRINTA:	MOVE.L  -8(A6),A1		* Puntero a buffer en A1
 	MOVE.B	(A1),D1			* Caracter de puntero de buffer en D1
-	CMP.L	#13,D1			* Si el caracter es un retorno de carro
+	CMP.B	#13,D1			* Si el caracter es un retorno de carro
 	BEQ	RETA
 	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
 	BSR	ESCCAR
@@ -635,7 +636,7 @@ RETA:	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
 	BSR	ESCCAR
 	CMP	#0,D0			* Si el buffer interno esta lleno
 	BNE	PRINTF
-	BSET	#0,CIMR
+	BSET	#0,CIMR			* Activo interrupcion de transmision de A
 	MOVE.B	CIMR,IMR
 	ADD.L	#1,-4(A6)		* Aumento contador
 	ADD.L	#1,-8(A6)		* Avanzo puntero
@@ -648,7 +649,7 @@ RETA:	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
 	
 PRINTB: MOVE.L  -8(A6),A1		* Puntero a buffer en A1
 	MOVE.B	(A1),D1			* Caracter de puntero de buffer en D1
-	CMP.L	#13,D1			* Si el caracter es un retorno de carro
+	CMP.B	#13,D1			* Si el caracter es un retorno de carro
 	BEQ	RETB
 	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
 	BSR	ESCCAR
@@ -666,7 +667,7 @@ RETB:	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
 	BSR	ESCCAR
 	CMP	#0,D0			* Si el buffer interno esta lleno
 	BNE	PRINTF
-	BSET	#0,CIMR
+	BSET	#4,CIMR			* Activo interrupcion de transmision de B
 	MOVE.B	CIMR,IMR
 	ADD.L	#1,-4(A6)		* Aumento contador
 	ADD.L	#1,-8(A6)		* Avanzo puntero
@@ -696,10 +697,13 @@ SCAN:   LINK	A6,#0			* Creacion del marco de pila
 	BEQ	SCANA
 	CMP.L	#1,D2			* Si Descriptor = 1
 	BEQ	SCANB
-	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
-	UNLK 	A6
-	RTS
 
+SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	MOVE.L	(A7)+,D7
+	UNLK 	A6
+	RTS	
 
 SCANA:	CMP.L	#0,D1			* Si Tamaño < 0
 	BLT	SCANE
@@ -758,13 +762,6 @@ SCAN0:	MOVE.L	#0,D0
 	UNLK 	A6
 	RTS
 
-SCANE:	MOVE.L	#$FFFFFFFF,D0		* D0 = 0xFFFFFFFF
-	MOVE.L	(A7)+,D7
-	MOVE.L	(A7)+,D7
-	MOVE.L	(A7)+,D7
-	UNLK 	A6
-	RTS	
-
 SCANF:	MOVE.L	-4(A6),D0
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
@@ -780,7 +777,56 @@ SCANF:	MOVE.L	-4(A6),D0
 INICIO:	BSR INIT
 	BREAK
 
+
+
 **************************** CEMENTERIO DE PRUEBAS ********************************************
+
+*esp dc.L $100000
+*INICIO:	BSR INIT
+*	MOVE.W	#$2000,SR
+*	MOVE.L	#0,D1
+*	MOVE.L	#0,D5	
+*	MOVE.L	#$5000,A0
+*BUCASD:	MOVE.B	#$31,(A0)+
+*	MOVE.B	#$32,(A0)+
+*	MOVE.B	#$33,(A0)+
+*	MOVE.B	#$34,(A0)+
+*	MOVE.B	#$35,(A0)+
+*	MOVE.B	#$36,(A0)+
+*	MOVE.B	#$37,(A0)+
+*	MOVE.B	#$38,(A0)+
+*	MOVE.B	#$39,(A0)+
+*	MOVE.B	#$30,(A0)+
+*	ADD.B	#1,D1
+*	CMP.B	#100,D1
+*	BNE	BUCASD
+*	MOVE.B	#13,(A0)+
+*	MOVE.B	#0,D1
+*	ADD.B	#1,D5
+*	CMP.B	#3,D5
+*	BNE	BUCASD
+*BUCASF:	MOVE.W	#$BBB,-(A7)
+*	MOVE.W	#0,-(A7)
+*	MOVE.L	#$5000,-(A7)
+*	BSR	PRINT
+*	MOVE.L	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*BESPE:  SUB.L #1,D1
+*	BNE BESPE
+*	
+*	MOVE.W	#$BBB,-(A7)
+*	MOVE.W	#1,-(A7)
+*	MOVE.L	#$5000,-(A7)
+*	BSR	PRINT
+*	MOVE.L	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*	MOVE.L ESP,D1
+*BESP:   SUB.L #1,D1
+*	BNE BESP
+*	BREAK
+
 *INICIO:	BSR	INIT
 *	MOVE.W	#$2000,SR
 *	MOVE.W	#2,-(A7)
