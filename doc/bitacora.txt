@@ -69,3 +69,7 @@ Bitacora del proyecto.
 	Se ha testeado PRINT.
 	Se ha realizado una entrega.
 	Tiempo: 5h.
+08/05/2019:
+	Se ha arreglado PRINT, corrigiendo según los fallos en la entrega anterior.
+	Se ha realizado una entrega.
+	Tiempo: 5h.
