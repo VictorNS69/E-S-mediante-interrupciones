@@ -52,6 +52,11 @@ Si todo ha salido correctamente, deberán abrirse 3 pantallas:
 
 Para una mayor información sobre el uso de la interfaz, mire la [documentación del proyecto](/doc/manual.pdf).
 
+Para mayor comodidad, se puede ejecutar el fichero [test.sh](/test.sh) el cual ensamblará el código y arrancará el simulador.
+```sh
+./test.sh
+```
+
 # Requisitos de las herramientas
 - Tener instalado `xterm` y `xtermpipe`
 ```bash
