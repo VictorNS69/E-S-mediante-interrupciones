@@ -204,8 +204,8 @@ LEECAR:	AND.L		#3,D0			* Se comparan los 3 primeros bits de D0
 *************** ELECCION DE BUFFER ***************
 *** BUFFER RECEPCION LINEA A ***
 LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
-	MOVE.L		PERA,A1		* A1 = PERA
-	MOVE.L		PIRA,A2		* A2 = PIRA
+	MOVE.L		PERA,A1			* A1 = PERA
+	MOVE.L		PIRA,A2			* A2 = PIRA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRA	
 	CMP		#BRA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -214,8 +214,8 @@ LRECA:	MOVE.L		CONTRA,D2		* D2 = CONTRA (contador)
 
 *** BUFFER RECEPCION LINEA B ***
 LRECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
-	MOVE.L		PERB,A1		* A1 = PERB
-	MOVE.L		PIRB,A2		* A2 = PIRB
+	MOVE.L		PERB,A1			* A1 = PERB
+	MOVE.L		PIRB,A2			* A2 = PIRB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTRB	
 	CMP		#BRB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -224,8 +224,8 @@ LRECB:	MOVE.L		CONTRB,D2		* D2 = CONTRB (contador)
 
 *** BUFFER TRANSMISION LINEA A ***
 LTRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
-	MOVE.L		PETA,A1		* A1 = PETA
-	MOVE.L		PITA,A2		* A2 = PITA
+	MOVE.L		PETA,A1			* A1 = PETA
+	MOVE.L		PITA,A2			* A2 = PITA
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTA	
 	CMP		#BTA+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -234,8 +234,8 @@ LTRANSA:MOVE.L		CONTTA,D2		* D2 = CONTTA (contador)
 
 *** BUFFER TRANSMISION LINEA B ***
 LTRANSB:MOVE.L		CONTTB,D2		* D2 = CONTTB (contador)
-	MOVE.L		PETB,A1		* A1 = PETB
-	MOVE.L		PITB,A2		* A2 = PITB
+	MOVE.L		PETB,A1			* A1 = PETB
+	MOVE.L		PITB,A2			* A2 = PITB
 	CMP.L		A1,A2			* Si los punteros coinciden miramos tamaño del buffer
 	BEQ 		LMCONTTB	
 	CMP		#BTB+1999,A1		* Si estamos al final del buffer, apuntamos de nuevo al principio (buffer circular)
@@ -677,7 +677,7 @@ RETB:	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
 	BEQ	PRINTF
 	BRA	PRINTB
 
-PRINTF:	MOVE.L	-4(A6),D0
+PRINTF:	MOVE.L	-4(A6),D0		* Final devolviendo el contador
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
 	UNLK	A6
@@ -755,14 +755,14 @@ SBUCB: 	MOVE.L  #1,D0			* Buffer interno de recepcion de la linea B
 	BEQ	SCANF
 	BRA	SBUCB
 
-SCAN0:	MOVE.L	#0,D0
+SCAN0:	MOVE.L	#0,D0			* Fin devolviendo 0
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
 	UNLK 	A6
 	RTS
 
-SCANF:	MOVE.L	-4(A6),D0
+SCANF:	MOVE.L	-4(A6),D0		* Fin devolviendo contador
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
 	MOVE.L	(A7)+,D7
@@ -777,10 +777,9 @@ SCANF:	MOVE.L	-4(A6),D0
 INICIO:	BSR INIT
 	BREAK
 
+**************************** FIN PROGRAMA PRINCIPAL ********************************************
 
-
-**************************** CEMENTERIO DE PRUEBAS ********************************************
-
+**************************** CEMENTERIO DE PRUEBAS ****************************
 *esp dc.L $100000
 *INICIO:	BSR INIT
 *	MOVE.W	#$2000,SR
@@ -893,5 +892,4 @@ INICIO:	BSR INIT
 *	MOVE.L	#4,D1
 *	BSR	ESCCAR
 
-
-**************************** FIN PROGRAMA PRINCIPAL *******************************************
+ ***********************************************************************
