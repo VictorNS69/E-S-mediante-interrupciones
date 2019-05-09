@@ -778,26 +778,45 @@ SCANF:	MOVE.L	-4(A6),D0		* Fin devolviendo contador
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
 
-*INICIO:	BSR INIT
-*	BREAK
+INICIO:	BSR INIT
+	BREAK
 
 **************************** FIN PROGRAMA PRINCIPAL ********************************************
 
-**************************** CEMENTERIO DE PRUEBAS ****************************
-INICIO:	BSR INIT
-	MOVE.W	#$2000,SR
-	MOVE.L	#0,D5
-	MOVE.L	#5000,A0
-BUC:	MOVE.W	#1000,-(A7)
-	MOVE.W	#0,-(A7)
-	MOVE.L	A0,-(A7)
-	BSR	SCAN
-
-BUCP:	MOVE.W	#3000,-(A7)
-	MOVE.W	#0,-(A7)
-	MOVE.L	#$5000,-(A7)
-	BSR	PRINT
-	BREAK
+**************************** PRUEBAS ****************************
+*esp dc.L $100000
+*buffer	dc.L	$5000
+*dirpar	dc.L	0
+*INICIO:	BSR 	INIT
+*	MOVE.L	BUFFER,DIRPAR
+*	MOVE.W	#$2000,SR
+*	MOVE.L	#0,D5
+*	MOVE.L	#$5000,A0
+*BUC:	MOVE.W	#1000,-(A7)
+*	MOVE.W	#0,-(A7)
+*	MOVE.L	DIRPAR,-(A7)
+*	BSR	SCAN
+*	MOVE.L	(A7)+,A0
+*	MOVE.W	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*	ADD.L	D0,DIRPAR
+*	ADD.L	D0,D5
+*	CMP.L	#3000,D5
+*	BNE	BUC
+*
+*	MOVE.L	BUFFER,DIRPAR
+*
+*BUCP:	MOVE.W	#3000,-(A7)
+*	MOVE.W	#1,-(A7)
+*	MOVE.L	DIRPAR,-(A7)
+*	BSR	PRINT
+*	MOVE.L	(A7)+,A0
+*	MOVE.W	(A7)+,D7
+*	MOVE.W	(A7)+,D7
+*	MOVE.L	ESP,D1
+*BESP:  	SUB.L #1,D1
+*	BNE BESP
+*	BREAK
 
 *esp dc.L $100000
 *INICIO:	BSR INIT

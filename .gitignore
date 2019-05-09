@@ -1,5 +1,6 @@
 puertoa
 puertob
+*.log
 *.lis
 *.h68
 practica.setup
