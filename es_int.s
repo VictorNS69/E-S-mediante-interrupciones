@@ -636,8 +636,10 @@ RETA:	MOVE.L	#2,D0			* Selecciono Buffer de transmision de A
 	BSR	ESCCAR
 	CMP	#0,D0			* Si el buffer interno esta lleno
 	BNE	PRINTF
+	MOVE.W	#$2700,SR		* Inhabilitamoso interrupciones
 	BSET	#0,CIMR			* Activo interrupcion de transmision de A
 	MOVE.B	CIMR,IMR
+	MOVE.W	#$2000,SR		* Habilitamoso interrupciones
 	ADD.L	#1,-4(A6)		* Aumento contador
 	ADD.L	#1,-8(A6)		* Avanzo puntero
 	MOVE.L	-4(A6),D1		* Contador a D1
@@ -667,8 +669,10 @@ RETB:	MOVE.L	#3,D0			* Selecciono Buffer de transmision de B
 	BSR	ESCCAR
 	CMP	#0,D0			* Si el buffer interno esta lleno
 	BNE	PRINTF
+	MOVE.W	#$2700,SR		* Inhabilitamoso interrupciones
 	BSET	#4,CIMR			* Activo interrupcion de transmision de B
 	MOVE.B	CIMR,IMR
+	MOVE.W	#$2000,SR		* Habilitamos interrupciones
 	ADD.L	#1,-4(A6)		* Aumento contador
 	ADD.L	#1,-8(A6)		* Avanzo puntero
 	MOVE.L	-4(A6),D1		* Contador a D1
@@ -774,12 +778,27 @@ SCANF:	MOVE.L	-4(A6),D0		* Fin devolviendo contador
 
 **************************** PROGRAMA PRINCIPAL ***********************************************
 
-INICIO:	BSR INIT
-	BREAK
+*INICIO:	BSR INIT
+*	BREAK
 
 **************************** FIN PROGRAMA PRINCIPAL ********************************************
 
 **************************** CEMENTERIO DE PRUEBAS ****************************
+INICIO:	BSR INIT
+	MOVE.W	#$2000,SR
+	MOVE.L	#0,D5
+	MOVE.L	#5000,A0
+BUC:	MOVE.W	#1000,-(A7)
+	MOVE.W	#0,-(A7)
+	MOVE.L	A0,-(A7)
+	BSR	SCAN
+
+BUCP:	MOVE.W	#3000,-(A7)
+	MOVE.W	#0,-(A7)
+	MOVE.L	#$5000,-(A7)
+	BSR	PRINT
+	BREAK
+
 *esp dc.L $100000
 *INICIO:	BSR INIT
 *	MOVE.W	#$2000,SR
