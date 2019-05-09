@@ -73,3 +73,7 @@ Bitacora del proyecto.
 	Se ha arreglado PRINT, corrigiendo según los fallos en la entrega anterior.
 	Se ha realizado una entrega.
 	Tiempo: 5h.
+09/05/2019:
+	Se ha intentado arreglar los problemas de concurrencia.
+	Se ha realizado una entrega.
+	Tiempo: 6h.
