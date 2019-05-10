@@ -77,3 +77,8 @@ Bitacora del proyecto.
 	Se ha intentado arreglar los problemas de concurrencia.
 	Se ha realizado una entrega.
 	Tiempo: 6h.
+10/05/2019:
+	Se ha intentado arreglar los problemas de concurrencia.
+	Se ha realizado la última entrega.
+	Tiempo: 4h.
+
