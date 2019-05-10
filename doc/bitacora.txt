@@ -82,3 +82,9 @@ Bitacora del proyecto.
 	Se ha realizado la última entrega.
 	Tiempo: 4h.
 
+No se pasan las siguientes pruebas:
+	- pr55es_int
+	- pr56es_int
+	- pr57es_int
+	- pr58es_int
+	- pr59es_int
