@@ -4,7 +4,7 @@ Realización de operaciones de Entrada/Salida en un periférico mediante interru
 ## Autores
 [Víctor Nieves Sánchez](https://twitter.com/VictorNS69)
 
-Daniel Morgera Pérez
+[Daniel Morgera Pérez](https://github.com/dmorgera)
 
 ## Herramientas
 La herramienta que se utiliza en la realización de esta práctica es el **simulador del MC68000 bsvc**. Este simulador incluye el programa **ensamblador 68kasm** y el fichero de configuración del computador emulado. 
