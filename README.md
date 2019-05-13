@@ -76,5 +76,7 @@ export PATH=$PATH:/usr/local/bsvc/bin
 # Problemas con las herramientas
 Para más información, consulte el apartado correspondiente en el [manual](/doc/manual.pdf).
 
+# Memoria del proyecto
+Podrás consultar la memoria final del proyecto [aquí](/doc/memoriaES.pdf).
 # Licencia
 [Licencia](/LICENSE).
